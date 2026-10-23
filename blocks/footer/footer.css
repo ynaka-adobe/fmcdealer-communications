@@ -18,3 +18,14 @@ footer .footer p {
     padding: 40px 32px 24px;
   }
 }
+
+/* Ford footer */
+footer .footer > div {
+  padding: 24px;
+  text-align: center;
+}
+
+footer .footer p {
+  font-size: 14px;
+  color: var(--text-color);
+}

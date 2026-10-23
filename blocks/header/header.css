@@ -322,3 +322,38 @@ header .breadcrumbs ol li[aria-current] {
     padding: 0 32px;
   }
 }
+
+/* FMCDealer Communications branding */
+header .nav-wrapper {
+  background-color: var(--light-color);
+}
+
+header nav .nav-brand p {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  color: #4d4d4d;
+}
+
+header nav .nav-brand a:any-link {
+  color: #4d4d4d;
+  text-decoration: none;
+}
+
+header nav .nav-brand .icon-ford-logo img {
+  display: block;
+  width: 80px;
+  height: 30px;
+}
+
+header nav .nav-tools a.button:any-link,
+header nav .nav-tools .button {
+  margin: 0;
+  border-radius: 2px;
+  padding: 8px 14px;
+  background-color: #00095b;
+  border-color: #00095b;
+  color: #fff;
+  font-size: 14px;
+}

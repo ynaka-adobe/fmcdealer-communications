@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60" role="img" aria-label="Ford">
+  <ellipse cx="80" cy="30" rx="77" ry="27" fill="#00095b" stroke="#fff" stroke-width="2"/>
+  <ellipse cx="80" cy="30" rx="77" ry="27" fill="none" stroke="#00095b" stroke-width="3" transform="translate(0 0)"/>
+  <text x="80" y="39" text-anchor="middle" font-family="'Brush Script MT','Segoe Script',cursive" font-style="italic" font-weight="700" font-size="30" fill="#fff">Ford</text>
+</svg>
