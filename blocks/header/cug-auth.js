@@ -2,7 +2,7 @@
 // by the xsc-demo-cug edge function, which only runs on this site's CDN hostname.
 
 // Where login actually runs (the edge function is not routed on *.aem.page / *.aem.live).
-const AUTH_ORIGIN = 'https://fmcdealer.ynaka-adobe.com';
+const AUTH_ORIGIN = 'https://fmc-dealer-communications.ynaka-adobe.com';
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
