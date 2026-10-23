@@ -130,6 +130,12 @@ export default async function decorate(block) {
           menu.append(li);
         });
         actions.append(menu);
+        // fixed positioning escapes the table's scroll container; flip up near the bottom edge
+        const k = kebab.getBoundingClientRect();
+        const m = menu.getBoundingClientRect();
+        const below = k.bottom + m.height + 8 <= window.innerHeight;
+        menu.style.top = `${below ? k.bottom : Math.max(8, k.top - m.height)}px`;
+        menu.style.left = `${Math.min(k.left, window.innerWidth - m.width - 8)}px`;
       });
       actions.append(kebab);
       const lead = el('td', 'communications-change');
@@ -218,6 +224,8 @@ export default async function decorate(block) {
   }
 
   document.addEventListener('click', closeMenus);
+  window.addEventListener('scroll', closeMenus, true);
+  window.addEventListener('resize', closeMenus);
   renderHead();
   renderBody();
   const scroller = el('div', 'communications-scroll');
