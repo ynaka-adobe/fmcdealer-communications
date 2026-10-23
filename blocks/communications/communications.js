@@ -4,7 +4,7 @@ const PAGE_SIZE = 10;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = (n) => String(n).padStart(2, '0');
 
-const COLUMNS = [
+const ACTIVE_COLUMNS = [
   { key: 'title', label: 'Title', sort: true, filter: true },
   { key: 'status', label: 'Status', sort: true, filter: true },
   { key: 'reviewer', label: 'Reviewer', sort: true, filter: true },
@@ -13,7 +13,19 @@ const COLUMNS = [
   { key: 'modified', label: 'Modified Date', sort: true, date: true },
 ];
 
+const ARCHIVE_COLUMNS = [
+  {
+    key: 'fileName', label: 'File Name', sort: true, filter: true, info: true,
+  },
+  { key: 'title', label: 'Title', sort: true, filter: true },
+  { key: 'status', label: 'Status', sort: true, filter: true },
+  { key: 'reviewer', label: 'Reviewer', sort: true, filter: true },
+  { key: 'author', label: 'Author', sort: true, filter: true },
+  { key: 'created', label: 'Created Date', sort: true, date: true },
+];
+
 const ACTIONS = ['Edit', 'Review', 'Archive'];
+const ARCHIVE_ACTIONS = ['View', 'Restore'];
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -28,7 +40,10 @@ function el(tag, className, text) {
 }
 
 export default async function decorate(block) {
-  const rows = await getCommunications();
+  const isArchive = block.classList.contains('archive');
+  const COLUMNS = isArchive ? ARCHIVE_COLUMNS : ACTIVE_COLUMNS;
+  const menuActions = isArchive ? ARCHIVE_ACTIONS : ACTIONS;
+  const rows = await getCommunications(isArchive ? 'archive' : undefined);
   const state = {
     sortKey: null, sortDir: 1, filters: {}, page: 1,
   };
@@ -37,12 +52,14 @@ export default async function decorate(block) {
 
   // toolbar
   const toolbar = el('div', 'communications-toolbar');
-  [['View Archive', 'view-archive'], ['Create Draft', 'create-draft']].forEach(([label, evt]) => {
-    const b = el('button', 'communications-button', label);
-    b.type = 'button';
-    b.addEventListener('click', () => block.dispatchEvent(new CustomEvent(`communications:${evt}`, { bubbles: true })));
-    toolbar.append(b);
-  });
+  if (!isArchive) {
+    const archive = el('a', 'communications-button', 'View Archive');
+    archive.href = '/archive';
+    const create = el('button', 'communications-button', 'Create Draft');
+    create.type = 'button';
+    create.addEventListener('click', () => block.dispatchEvent(new CustomEvent('communications:create-draft', { bubbles: true })));
+    toolbar.append(archive, create);
+  }
 
   // table
   const table = el('table');
@@ -92,7 +109,7 @@ export default async function decorate(block) {
         closeMenus();
         if (open) return;
         const menu = el('ul', 'communications-menu');
-        ACTIONS.forEach((a) => {
+        menuActions.forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
           item.type = 'button';
@@ -106,9 +123,23 @@ export default async function decorate(block) {
         actions.append(menu);
       });
       actions.append(kebab);
-      tr.append(actions, el('td', 'communications-change'));
+      const lead = el('td', 'communications-change');
+      if (isArchive && r.locked) {
+        const lock = el('span', 'communications-info', '\u24D8');
+        lock.title = 'Locked';
+        lock.setAttribute('role', 'img');
+        lock.setAttribute('aria-label', 'Locked');
+        lead.append(lock);
+      }
+      tr.append(actions, lead);
       COLUMNS.forEach((c) => {
-        tr.append(el('td', c.date ? 'communications-date' : '', c.date ? formatDate(r[c.key]) : r[c.key]));
+        const td = el('td', c.date ? 'communications-date' : '', c.date ? formatDate(r[c.key]) : r[c.key]);
+        if (c.info) {
+          const i = el('span', 'communications-info', ' \u24D8');
+          i.title = `Details for ${r[c.key]}`;
+          td.append(i);
+        }
+        tr.append(td);
       });
       tbody.append(tr);
     });
@@ -135,7 +166,7 @@ export default async function decorate(block) {
     thead.textContent = '';
     const labels = el('tr');
     const filters = el('tr', 'communications-filters');
-    labels.append(el('th', '', 'Actions'), el('th', '', 'Change'));
+    labels.append(el('th', '', 'Actions'), el('th', '', isArchive ? 'Locked' : 'Change'));
     filters.append(el('th'), el('th'));
     COLUMNS.forEach((c) => {
       const th = el('th');

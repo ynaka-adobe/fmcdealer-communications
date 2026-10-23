@@ -12,7 +12,19 @@
   margin-bottom: 16px;
 }
 
-.communications button.communications-button {
+.communications .communications-button {
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.communications span.communications-info {
+  color: #555;
+  cursor: help;
+}
+
+.communications button.communications-button,
+.communications a.communications-button {
   margin: 0;
   border: 0;
   border-radius: 2px;
@@ -25,7 +37,9 @@
 }
 
 .communications button.communications-button:hover,
-.communications button.communications-button:focus-visible {
+.communications a.communications-button:hover,
+.communications button.communications-button:focus-visible,
+.communications a.communications-button:focus-visible {
   background-color: #1a2480;
 }
 
