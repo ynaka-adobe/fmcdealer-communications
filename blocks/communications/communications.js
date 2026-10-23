@@ -25,7 +25,7 @@ const ARCHIVE_COLUMNS = [
 ];
 
 const ACTIONS = ['Edit', 'Review', 'Archive'];
-const ARCHIVE_ACTIONS = ['View', 'Restore'];
+const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'View Properties', 'Version'];
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -115,7 +115,7 @@ export default async function decorate(block) {
           item.type = 'button';
           item.addEventListener('click', () => {
             closeMenus();
-            block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase()}`, { bubbles: true, detail: r }));
+            block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, detail: r }));
           });
           li.append(item);
           menu.append(li);

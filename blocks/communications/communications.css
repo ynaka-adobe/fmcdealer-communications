@@ -126,15 +126,15 @@
 
 .communications ul.communications-menu {
   position: absolute;
-  top: 70%;
-  left: 24px;
+  top: 80%;
+  left: 12px;
   z-index: 3;
+  min-width: 130px;
   margin: 0;
   padding: 4px 0;
   list-style: none;
-  background: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  background: var(--comm-navy);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   text-align: left;
 }
 
@@ -144,16 +144,20 @@
   margin: 0;
   border: 0;
   border-radius: 0;
-  padding: 8px 16px;
+  padding: 8px 10px;
   background: none;
-  color: var(--text-color);
-  font-size: 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
   text-align: left;
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.communications ul.communications-menu button:hover {
-  background: var(--light-color);
+.communications ul.communications-menu button:hover,
+.communications ul.communications-menu button:focus-visible {
+  background: #4a69b0;
+  outline: 0;
 }
 
 .communications .communications-pager {
