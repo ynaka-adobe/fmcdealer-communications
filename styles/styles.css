@@ -215,6 +215,25 @@ button:disabled:hover {
   cursor: unset;
 }
 
+/* Ford buttons: content links styled as buttons match the app's navy buttons */
+a.button:any-link {
+  margin: 0 0 12px;
+  border: 0;
+  border-radius: 2px;
+  padding: 8px 14px;
+  background-color: #00095b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+a.button:hover,
+a.button:focus-visible {
+  background-color: #1a2480;
+  color: #fff;
+}
+
 a.button.secondary,
 button.secondary {
   background-color: unset;
