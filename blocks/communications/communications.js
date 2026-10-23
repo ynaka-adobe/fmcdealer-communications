@@ -1,4 +1,5 @@
-import getCommunications from './communications-data.js';
+import getCommunications, { shouldShowAnnouncement } from './communications-data.js';
+import showAnnouncement from './announcement.js';
 
 const PAGE_SIZE = 10;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -57,7 +58,12 @@ export default async function decorate(block) {
     archive.href = '/archive';
     const create = el('button', 'communications-button', 'Create Draft');
     create.type = 'button';
-    create.addEventListener('click', () => block.dispatchEvent(new CustomEvent('communications:create-draft', { bubbles: true })));
+    create.addEventListener('click', async () => {
+      const proceed = block.dispatchEvent(new CustomEvent('communications:create-draft', { bubbles: true, cancelable: true }));
+      if (!proceed) return;
+      if (shouldShowAnnouncement() && !(await showAnnouncement())) return;
+      window.location.href = '/create-draft';
+    });
     toolbar.append(archive, create);
   }
 

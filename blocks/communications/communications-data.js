@@ -31,7 +31,30 @@ const ARCHIVE = [
 
 /** @param {string} [type] 'archive' for archived communications, else the active list */
 export default async function getCommunications(type) {
-  return type === 'archive' ? ARCHIVE : SAMPLE;
+  if (type === 'archive') return ARCHIVE;
+  // drafts created in this browser session (see create-draft-data.js) show first
+  let drafts = [];
+  try {
+    drafts = JSON.parse(sessionStorage.getItem('fmc-drafts') || '[]');
+  } catch (e) { /* storage unavailable */ }
+  return [...drafts, ...SAMPLE];
+}
+
+/*
+ * Optional reminder shown when Create Draft is pressed. The criteria for showing it
+ * are still TBD, so shouldShowAnnouncement() always returns the `enabled` flag.
+ */
+export const ANNOUNCEMENT = {
+  enabled: true,
+  title: 'ANNOUNCEMENT',
+  message: 'Please create to continue creating your communication type',
+  ticketText: 'If you need a special audience or mail merge',
+  ticketLinkText: 'click here to submit a ticket',
+  ticketUrl: '#',
+};
+
+export function shouldShowAnnouncement() {
+  return ANNOUNCEMENT.enabled;
 }
 
 /*

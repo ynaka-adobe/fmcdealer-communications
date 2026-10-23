@@ -187,3 +187,85 @@
   opacity: 0.6;
   cursor: default;
 }
+
+/* announcement dialog (opened by Create Draft) */
+dialog.announcement {
+  width: min(560px, calc(100vw - 32px));
+  margin: 12vh auto auto;
+  border: 0;
+  border-radius: 3px;
+  padding: 0;
+  color: #333;
+  font-size: 14px;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 30%);
+}
+
+dialog.announcement::backdrop {
+  background: rgb(0 0 0 / 40%);
+}
+
+dialog.announcement .announcement-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: #00095b;
+  color: #fff;
+}
+
+dialog.announcement h2 {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+dialog.announcement button {
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+dialog.announcement .announcement-x {
+  background: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+dialog.announcement .announcement-body {
+  padding: 14px 16px 6px;
+}
+
+dialog.announcement .announcement-body p {
+  margin: 0 0 12px;
+}
+
+dialog.announcement .announcement-body a:any-link {
+  color: #00095b;
+  text-decoration: underline;
+}
+
+dialog.announcement .announcement-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #eee;
+  padding: 12px 16px;
+}
+
+dialog.announcement .announcement-cancel {
+  background: none;
+  color: #00095b;
+  font-size: 13px;
+}
+
+dialog.announcement .announcement-create {
+  border-radius: 2px;
+  padding: 8px 18px;
+  background: #4a6fc0;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
