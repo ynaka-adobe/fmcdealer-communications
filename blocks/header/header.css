@@ -363,10 +363,6 @@ header nav .nav-brand p {
   white-space: nowrap;
 }
 
-header nav {
-  max-width: none;
-}
-
 header nav .nav-sections {
   flex: 1 1 auto;
 }
