@@ -184,7 +184,8 @@ export default async function decorate(block) {
   nav.id = 'nav';
   while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
 
-  const classes = ['brand', 'sections', 'tools'];
+  // a two-section nav (brand + tools) has no sections; empty sections are dropped by EDS
+  const classes = nav.children.length === 2 ? ['brand', 'tools'] : ['brand', 'sections', 'tools'];
   classes.forEach((c, i) => {
     const section = nav.children[i];
     if (section) section.classList.add(`nav-${c}`);
