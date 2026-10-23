@@ -115,7 +115,10 @@ export default async function decorate(block) {
           item.type = 'button';
           item.addEventListener('click', () => {
             closeMenus();
-            block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, detail: r }));
+            const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
+            if (proceed && isArchive && a === 'Preview') {
+              window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
+            }
           });
           li.append(item);
           menu.append(li);
