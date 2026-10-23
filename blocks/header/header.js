@@ -1,5 +1,6 @@
 import { fetchPlaceholders, getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
+import buildAuthWidget from './cug-auth.js';
 
 // media query match that indicates mobile/tablet width
 const isDesktop = window.matchMedia('(min-width: 900px)');
@@ -213,7 +214,16 @@ export default async function decorate(block) {
     });
   }
 
-  const navTools = nav.querySelector('.nav-tools');
+  let navTools = nav.querySelector('.nav-tools');
+  if (!navTools) {
+    // the account widget lives here; the nav authors only the brand
+    navTools = document.createElement('div');
+    navTools.className = 'nav-tools';
+    nav.append(navTools);
+  }
+  buildAuthWidget().then((widget) => {
+    if (widget) navTools.append(widget);
+  });
   if (navTools) {
     const search = navTools.querySelector('a[href*="search"]');
     if (search && search.textContent === '') {
