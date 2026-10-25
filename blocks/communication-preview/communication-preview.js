@@ -1,11 +1,20 @@
 import { getCommunicationDetail, listCommunications } from '../../scripts/communications-api.js';
 import { sanitizeHtml } from '../create-draft/rich-text.js';
+import { downloadHtml } from '../../scripts/communication-export.js';
 
 function el(tag, className, text) {
   const e = document.createElement(tag);
   if (className) e.className = className;
   if (text !== undefined) e.textContent = text;
   return e;
+}
+
+// a button, not a link: the HTML file is built in the page from the communication's content
+function htmlButton(file) {
+  const b = el('button', 'communication-preview-download-html', 'Download HTML');
+  b.type = 'button';
+  b.addEventListener('click', () => downloadHtml(file));
+  return b;
 }
 
 export default async function decorate(block) {
@@ -35,7 +44,7 @@ export default async function decorate(block) {
     open.href = pdf;
     open.target = '_blank';
     open.rel = 'noopener';
-    bar.append(download, open);
+    bar.append(download, htmlButton(entry.fileName), open);
     const viewer = el('iframe', 'communication-preview-pdf');
     viewer.src = pdf;
     viewer.title = `${entry.title} (PDF)`;
@@ -54,6 +63,9 @@ export default async function decorate(block) {
       side.append(dl);
     });
     main.append(el('h1', '', detail.title));
+    const bar = el('div', 'communication-preview-actions');
+    bar.append(htmlButton(file));
+    main.append(bar);
     const content = el('div', 'communication-preview-content');
     content.innerHTML = sanitizeHtml(detail.body); // remote content is not trusted
     main.append(content);

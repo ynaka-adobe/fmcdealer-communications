@@ -119,3 +119,14 @@
   min-height: 480px;
   border: 1px solid #ccc;
 }
+
+.communication-preview-actions button {
+  border: 1px solid var(--comm-navy, #00095b);
+  border-radius: 2px;
+  padding: 8px 16px;
+  background: #fff;
+  color: var(--comm-navy, #00095b);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}

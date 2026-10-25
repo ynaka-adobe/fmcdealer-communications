@@ -1,6 +1,7 @@
 import { shouldShowAnnouncement } from './communications-data.js';
 import { listCommunications, watchCommunications } from '../../scripts/communications-api.js';
 import showAnnouncement from './announcement.js';
+import { downloadHtml, downloadPdf } from '../../scripts/communication-export.js';
 
 const PAGE_SIZE = 10;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -55,7 +56,7 @@ function score(cell, query) {
 }
 
 const ACTIONS = ['Edit', 'Review', 'Archive'];
-const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'View Properties', 'Version'];
+const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'Download PDF', 'Download HTML', 'View Properties', 'Version'];
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -198,16 +199,18 @@ export default async function decorate(block) {
         closeMenus();
         if (open) return;
         const menu = el('ul', 'communications-menu');
-        menuActions.forEach((a) => {
+        // a PDF can only be downloaded when one was exported for this communication
+        menuActions.filter((a) => a !== 'Download PDF' || r.pdf).forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
           item.type = 'button';
           item.addEventListener('click', () => {
             closeMenus();
             const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
-            if (proceed && isArchive && a === 'Preview') {
-              window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
-            }
+            if (!proceed || !isArchive) return;
+            if (a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
+            if (a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
+            if (a === 'Download HTML') downloadHtml(r.fileName);
           });
           li.append(item);
           menu.append(li);
