@@ -109,13 +109,16 @@ export async function listCommunications(type = 'active') {
     const resp = await fetch(`${dataBase()}/${SHEETS[type === 'archive' ? 'archive' : 'active']}.json?limit=1000`, { credentials: 'same-origin', cache: 'no-cache' });
     if (!resp.ok) throw new Error(`communications api ${resp.status} for data sheet`);
     const sheet = await resp.json();
-    const rows = (sheet.data || []).map(fromSheetRow);
+    // DA publishes an empty sheet as one blank row, which is not a communication
+    const rows = (sheet.data || []).map(fromSheetRow).filter((r) => r.id && r.title);
     if (type !== 'archive') {
       // drafts this browser created that the sheet does not list yet (the sheet is updated
       // by the service and republished, which takes a moment)
       const { savedDrafts } = await import(MOCK_DRAFTS);
+      // only for a few minutes: after that the sheet has it (or it moved on, e.g. to the archive)
       const known = new Set(rows.map((r) => r.id));
-      savedDrafts().filter((d) => !known.has(d.id)).forEach((d) => rows.push(fromSheetRow(d)));
+      const fresh = (d) => Date.now() - Date.parse(`${d.created}Z`) < 3 * 60 * 1000;
+      savedDrafts().filter((d) => !known.has(d.id) && fresh(d)).forEach((d) => rows.push(fromSheetRow(d)));
     }
     // the active list is newest first; the archive keeps the sheet's order
     return type === 'archive' ? rows : rows.sort((a, b) => String(b.modified).localeCompare(String(a.modified)));
