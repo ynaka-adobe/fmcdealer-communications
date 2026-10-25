@@ -29,7 +29,7 @@ const ARCHIVE_COLUMNS = [
 ];
 
 // workflow order for the Status list; any other value sorts after these, alphabetically
-const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
+const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
 
 // Text search: each cell is folded to lower case without accents and split into words once per
 // row set (the "index"). A query matches when every query word starts a word of the cell, in any
@@ -194,8 +194,10 @@ export default async function decorate(block) {
   async function review(r, action) {
     try {
       const out = await runReview(r.id, action);
-      settled.set(r.id, { status: out.status, gone: action === 'approve' || action === 'reopen', until: Date.now() + SETTLE_MS });
-      if (action === 'approve' || action === 'reopen') {
+      // approving starts PDF generation; the row leaves this list only once it is APPROVED
+      const gone = out.status === 'APPROVED' || action === 'reopen';
+      settled.set(r.id, { status: out.status, gone, until: Date.now() + SETTLE_MS });
+      if (gone) {
         // it now belongs on the other list; this one drops it at once
         rows = rows.filter((x) => x.id !== r.id);
       } else {
@@ -204,7 +206,9 @@ export default async function decorate(block) {
       index = buildIndex(rows, searchKeys);
       Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
       renderBody();
-      toast(`"${r.title}" ${REVIEW_DONE[action]}.`);
+      toast(out.status === 'GENERATING PDF'
+        ? `Generating the PDF for "${r.title}". It moves to the archive when the PDF is ready.`
+        : `"${r.title}" ${REVIEW_DONE[action]}.`);
     } catch (e) {
       if (!e.cancelled) toast(e.message, 'error');
     }
