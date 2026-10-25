@@ -1,4 +1,5 @@
-import getCommunications, { shouldShowAnnouncement } from './communications-data.js';
+import { shouldShowAnnouncement } from './communications-data.js';
+import { listCommunications, watchCommunications } from '../../scripts/communications-api.js';
 import showAnnouncement from './announcement.js';
 
 const PAGE_SIZE = 10;
@@ -44,7 +45,7 @@ export default async function decorate(block) {
   const isArchive = block.classList.contains('archive');
   const COLUMNS = isArchive ? ARCHIVE_COLUMNS : ACTIVE_COLUMNS;
   const menuActions = isArchive ? ARCHIVE_ACTIONS : ACTIONS;
-  const rows = await getCommunications(isArchive ? 'archive' : undefined);
+  let rows = await listCommunications(isArchive ? 'archive' : 'active');
   const state = {
     sortKey: null, sortDir: 1, filters: {}, page: 1,
   };
@@ -228,6 +229,8 @@ export default async function decorate(block) {
   window.addEventListener('resize', closeMenus);
   renderHead();
   renderBody();
+  // pick up workflow status changes made in AEM (remote backend only)
+  watchCommunications(isArchive ? 'archive' : 'active', (fresh) => { rows = fresh; renderBody(); });
   const scroller = el('div', 'communications-scroll');
   scroller.append(table);
   block.append(toolbar, scroller, pager);

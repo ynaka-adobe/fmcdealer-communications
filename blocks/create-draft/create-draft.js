@@ -1,7 +1,8 @@
 import {
   CHANNELS, DEALER_GROUPS, DEALER_ROLES, DEPARTMENTS, DIVISIONS, FIELD_GROUPS, FIELD_ROLES,
-  ROUTING, saveDraft,
+  ROUTING,
 } from './create-draft-data.js';
+import { createDraft } from '../../scripts/communications-api.js';
 import { sanitizeHtml, richText } from './rich-text.js';
 
 const STEPS = 4;
@@ -459,12 +460,19 @@ export default async function decorate(block) {
       body.append(done);
       const payload = JSON.parse(JSON.stringify(state, (k, v) => (k === 'fieldFiles' || k === 'dealerFiles' ? v.map((f) => f.name) : v)));
       delete payload.step;
-      saveDraft(payload).then(() => {
+      createDraft(payload).then(() => {
         done.textContent = '';
         done.append(el('h2', '', 'Draft created'), el('p', '', `“${state.title}” was saved as a draft.`));
         const home = el('a', 'cd-btn cd-btn-blue', 'Back to Communications');
         home.href = '/';
         done.append(home);
+      }).catch(() => {
+        done.textContent = '';
+        done.append(el('h2', '', 'Draft not saved'), el('p', '', 'The draft could not be saved. Your entries are kept; try again.'));
+        const retry = el('button', 'cd-btn cd-btn-blue', 'Back to review');
+        retry.type = 'button';
+        retry.addEventListener('click', () => go(5));
+        done.append(retry);
       });
     }
     block.append(body, nav);

@@ -43,6 +43,7 @@ const DRAFTS_KEY = 'fmc-drafts';
 export async function saveDraft(payload) {
   const now = new Date().toISOString().slice(0, 19);
   const record = {
+    id: `DRAFT-${Date.now()}`,
     title: payload.title,
     status: 'DRAFT',
     reviewer: payload.reviewer || '-',

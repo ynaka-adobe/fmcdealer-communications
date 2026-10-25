@@ -1,4 +1,5 @@
-import { getCommunicationDetail } from '../communications/communications-data.js';
+import { getCommunicationDetail } from '../../scripts/communications-api.js';
+import { sanitizeHtml } from '../create-draft/rich-text.js';
 
 function el(tag, className, text) {
   const e = document.createElement(tag);
@@ -25,7 +26,7 @@ export default async function decorate(block) {
     });
     main.append(el('h1', '', detail.title));
     const content = el('div', 'communication-preview-content');
-    content.innerHTML = detail.body; // trusted sample content, see communications-data.js
+    content.innerHTML = sanitizeHtml(detail.body); // remote content is not trusted
     main.append(content);
   } else {
     main.append(el('h1', '', file || 'No communication selected'));
