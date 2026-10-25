@@ -29,6 +29,31 @@ const ARCHIVE_COLUMNS = [
 // workflow order for the Status list; any other value sorts after these, alphabetically
 const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'PUBLISHED', 'UNPUBLISH'];
 
+// Text search: each cell is folded to lower case without accents and split into words once per
+// row set (the "index"). A query matches when every query word starts a word of the cell, in any
+// order; a substring hit inside a word still counts, but ranks lower.
+const fold = (v) => String(v == null ? '' : v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const wordsOf = (folded) => folded.split(/[^a-z0-9]+/).filter(Boolean);
+
+function buildIndex(rows, keys) {
+  const index = new Map();
+  rows.forEach((r) => {
+    const entry = {};
+    keys.forEach((k) => { const text = fold(r[k]); entry[k] = { text, words: wordsOf(text) }; });
+    index.set(r, entry);
+  });
+  return index;
+}
+
+/** 0 = no match, 3 = whole phrase at the start, 2 = every word starts a word, 1 = substrings only */
+function score(cell, query) {
+  const terms = wordsOf(query);
+  if (!terms.length) return 3;
+  if (cell.text.startsWith(query)) return 3;
+  if (terms.every((t) => cell.words.some((w) => w.startsWith(t)))) return 2;
+  return terms.every((t) => cell.text.includes(t)) ? 1 : 0;
+}
+
 const ACTIONS = ['Edit', 'Review', 'Archive'];
 const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'View Properties', 'Version'];
 
@@ -96,16 +121,23 @@ export default async function decorate(block) {
   const pager = el('nav', 'communications-pager');
   pager.setAttribute('aria-label', 'Pagination');
 
+  const searchKeys = COLUMNS.filter((c) => c.filter && !c.select).map((c) => c.key);
+  let index = buildIndex(rows, searchKeys);
+
   function visibleRows() {
-    let out = rows.filter((r) => Object.entries(state.filters)
-      .every(([k, v]) => {
-        if (!v) return true;
-        return COLUMNS.find((c) => c.key === k).select
-          ? String(r[k]) === v
-          : String(r[k]).toLowerCase().includes(v.toLowerCase());
-      }));
+    const best = new Map(); // row -> its weakest search score, for ranking
+    let out = rows.filter((r) => Object.entries(state.filters).every(([k, v]) => {
+      if (!v) return true;
+      if (COLUMNS.find((c) => c.key === k).select) return String(r[k]) === v;
+      const hit = score(index.get(r)[k], fold(v).trim());
+      best.set(r, Math.min(best.get(r) || 3, hit));
+      return hit > 0;
+    }));
     if (state.sortKey) {
       out = [...out].sort((a, b) => (a[state.sortKey] > b[state.sortKey] ? 1 : -1) * state.sortDir);
+    } else if (best.size) {
+      // no explicit sort: best matches first, otherwise the sheet's own order
+      out = out.map((r, i) => [r, i]).sort((a, b) => (best.get(b[0]) - best.get(a[0])) || (a[1] - b[1])).map(([r]) => r);
     }
     return out;
   }
@@ -293,6 +325,7 @@ export default async function decorate(block) {
   // pick up workflow status changes made in AEM (remote backend only)
   watchCommunications(isArchive ? 'archive' : 'active', (fresh) => {
     rows = fresh;
+    index = buildIndex(rows, searchKeys);
     Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
     renderBody();
   });
