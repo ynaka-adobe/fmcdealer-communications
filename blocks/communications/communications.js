@@ -27,7 +27,7 @@ const ARCHIVE_COLUMNS = [
 ];
 
 // workflow order for the Status list; any other value sorts after these, alphabetically
-const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'PUBLISHED', 'UNPUBLISH'];
+const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
 
 // Text search: each cell is folded to lower case without accents and split into words once per
 // row set (the "index"). A query matches when every query word starts a word of the cell, in any
