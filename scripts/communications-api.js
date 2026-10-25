@@ -82,7 +82,7 @@ async function request(path, init = {}) {
  */
 export async function listCommunications(type = 'active') {
   if (dataBase()) {
-    const resp = await fetch(`${dataBase()}/${SHEETS[type === 'archive' ? 'archive' : 'active']}.json?limit=1000`, { credentials: 'same-origin' });
+    const resp = await fetch(`${dataBase()}/${SHEETS[type === 'archive' ? 'archive' : 'active']}.json?limit=1000`, { credentials: 'same-origin', cache: 'no-cache' });
     if (!resp.ok) throw new Error(`communications api ${resp.status} for data sheet`);
     const sheet = await resp.json();
     const rows = (sheet.data || []).map(fromSheetRow);
