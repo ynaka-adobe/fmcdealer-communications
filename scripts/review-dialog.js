@@ -1,6 +1,6 @@
 /*
- * Demo review actions (send to reviewer, final approval, approve, reopen). The site is anonymous,
- * so the service asks for a demo code; it is asked for once per browser tab and kept only in
+ * Demo review actions (send to reviewer, final approval, approve, reopen). A signed-in employee
+ * needs nothing more. Anyone else is asked for a demo code, once per browser tab, kept only in
  * sessionStorage. Without the code, nothing is changed.
  */
 import { reviewCommunication } from './communications-api.js';
@@ -66,17 +66,19 @@ function prompt(message) {
  * (also when the person cancels the code prompt, with `cancelled` set).
  */
 export async function runReview(id, action) {
+  // First try with the remembered code, or none: a signed-in employee needs no code, so the
+  // prompt appears only when the service says one is required.
   let code = read();
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    if (!code) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (!code && attempt > 0) {
       // eslint-disable-next-line no-await-in-loop
-      code = await prompt(attempt ? 'That code was not accepted. Enter the demo code' : 'Enter the demo code to continue');
+      code = await prompt(attempt > 1 ? 'That code was not accepted. Enter the demo code' : 'Enter the demo code to continue');
       if (!code) { const e = new Error('Cancelled'); e.cancelled = true; throw e; }
     }
     try {
       // eslint-disable-next-line no-await-in-loop
       const out = await reviewCommunication(id, action, code);
-      write(code);
+      if (code) write(code);
       return out;
     } catch (e) {
       if (e.status !== 403) throw e;
