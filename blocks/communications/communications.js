@@ -8,9 +8,9 @@ const pad = (n) => String(n).padStart(2, '0');
 
 const ACTIVE_COLUMNS = [
   { key: 'title', label: 'Title', sort: true, filter: true },
-  { key: 'status', label: 'Status', sort: true, filter: true },
-  { key: 'reviewer', label: 'Reviewer', sort: true, filter: true },
-  { key: 'author', label: 'Author', sort: true, filter: true },
+  { key: 'status', label: 'Status', sort: true, filter: true, select: true },
+  { key: 'reviewer', label: 'Reviewer', sort: true, filter: true, select: true },
+  { key: 'author', label: 'Author', sort: true, filter: true, select: true },
   { key: 'created', label: 'Created Date', sort: true, date: true },
   { key: 'modified', label: 'Modified Date', sort: true, date: true },
 ];
@@ -20,11 +20,14 @@ const ARCHIVE_COLUMNS = [
     key: 'fileName', label: 'File Name', sort: true, filter: true, info: true,
   },
   { key: 'title', label: 'Title', sort: true, filter: true },
-  { key: 'status', label: 'Status', sort: true, filter: true },
-  { key: 'reviewer', label: 'Reviewer', sort: true, filter: true },
-  { key: 'author', label: 'Author', sort: true, filter: true },
+  { key: 'status', label: 'Status', sort: true, filter: true, select: true },
+  { key: 'reviewer', label: 'Reviewer', sort: true, filter: true, select: true },
+  { key: 'author', label: 'Author', sort: true, filter: true, select: true },
   { key: 'created', label: 'Created Date', sort: true, date: true },
 ];
+
+// workflow order for the Status list; any other value sorts after these, alphabetically
+const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'PUBLISHED', 'UNPUBLISH'];
 
 const ACTIONS = ['Edit', 'Review', 'Archive'];
 const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'View Properties', 'Version'];
@@ -95,11 +98,41 @@ export default async function decorate(block) {
 
   function visibleRows() {
     let out = rows.filter((r) => Object.entries(state.filters)
-      .every(([k, v]) => !v || String(r[k]).toLowerCase().includes(v.toLowerCase())));
+      .every(([k, v]) => {
+        if (!v) return true;
+        return COLUMNS.find((c) => c.key === k).select
+          ? String(r[k]) === v
+          : String(r[k]).toLowerCase().includes(v.toLowerCase());
+      }));
     if (state.sortKey) {
       out = [...out].sort((a, b) => (a[state.sortKey] > b[state.sortKey] ? 1 : -1) * state.sortDir);
     }
     return out;
+  }
+
+  // the choices of a drop-down are the values currently in the sheet
+  const selects = {};
+  function optionsFor(key) {
+    const values = [...new Set(rows.map((r) => String(r[key] || '')).filter((v) => v && v !== '-'))];
+    if (key !== 'status') return values.sort((a, b) => a.localeCompare(b));
+    const rank = (v) => (STATUS_ORDER.includes(v) ? STATUS_ORDER.indexOf(v) : STATUS_ORDER.length);
+    return values.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  }
+  function fillSelect(select, key, label) {
+    const keep = state.filters[key] || '';
+    select.textContent = '';
+    const all = el('option', '', `Any ${label.toLowerCase()}`);
+    all.value = '';
+    select.append(all);
+    const values = optionsFor(key);
+    // a selected value that has left the sheet stays selectable until the person changes it
+    if (keep && !values.includes(keep)) values.push(keep);
+    values.forEach((v) => {
+      const o = el('option', '', v);
+      o.value = v;
+      select.append(o);
+    });
+    select.value = keep;
   }
 
   function closeMenus() {
@@ -223,7 +256,18 @@ export default async function decorate(block) {
       labels.append(th);
 
       const fth = el('th');
-      if (c.filter) {
+      if (c.select) {
+        const select = el('select');
+        select.setAttribute('aria-label', `Filter by ${c.label}`);
+        selects[c.key] = { select, label: c.label };
+        fillSelect(select, c.key, c.label);
+        select.addEventListener('change', () => {
+          state.filters[c.key] = select.value;
+          state.page = 1;
+          renderBody();
+        });
+        fth.append(select);
+      } else if (c.filter) {
         const input = el('input');
         input.type = 'search';
         input.placeholder = `Search by ${c.label}`;
@@ -247,7 +291,11 @@ export default async function decorate(block) {
   renderHead();
   renderBody();
   // pick up workflow status changes made in AEM (remote backend only)
-  watchCommunications(isArchive ? 'archive' : 'active', (fresh) => { rows = fresh; renderBody(); });
+  watchCommunications(isArchive ? 'archive' : 'active', (fresh) => {
+    rows = fresh;
+    Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
+    renderBody();
+  });
   const scroller = el('div', 'communications-scroll');
   scroller.append(table);
   block.append(toolbar, scroller, pager);

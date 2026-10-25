@@ -82,7 +82,8 @@
   cursor: pointer;
 }
 
-.communications thead input {
+.communications thead input,
+.communications thead select {
   box-sizing: border-box;
   width: 100%;
   min-width: 120px;
@@ -90,6 +91,7 @@
   border: 1px solid #ccc;
   border-radius: 2px;
   padding: 6px 8px;
+  background: #fff;
   font-size: 13px;
 }
 
