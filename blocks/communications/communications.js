@@ -4,7 +4,7 @@ import showAnnouncement from './announcement.js';
 import { downloadHtml, downloadPdf } from '../../scripts/communication-export.js';
 import { runReview, toast } from '../../scripts/review-dialog.js';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 7;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = (n) => String(n).padStart(2, '0');
 
