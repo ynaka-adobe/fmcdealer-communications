@@ -54,6 +54,7 @@ function fromSheetRow(r) {
     created: r.created || '',
     modified: r.modified || r.created || '',
     locked: String(r.locked).toLowerCase() === 'true',
+    aemPath: r.aemPath || '',
     pdf: /^\/[\w./-]+\.pdf$/i.test(r.pdf || '') ? r.pdf : '', // a site path only
   };
 }
@@ -74,6 +75,27 @@ async function request(path, init = {}) {
   });
   if (!resp.ok) throw new Error(`communications api ${resp.status} for ${path}`);
   return resp.status === 204 ? null : resp.json();
+}
+
+/**
+ * Demo review action on one communication: 'reviewer', 'final', 'approve' or 'reopen'.
+ * Rejects with an Error whose message is the service's reason and whose `status` is the HTTP status.
+ */
+export async function reviewCommunication(id, action, code) {
+  const resp = await fetch(`${apiBase()}/communications/${encodeURIComponent(id)}/review`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({ action, code }),
+  });
+  const body = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    const e = new Error(body.error || `The request failed (${resp.status}).`);
+    e.status = resp.status;
+    throw e;
+  }
+  return body;
 }
 
 /**

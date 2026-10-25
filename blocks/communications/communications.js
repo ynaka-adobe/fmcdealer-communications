@@ -2,6 +2,7 @@ import { shouldShowAnnouncement } from './communications-data.js';
 import { listCommunications, watchCommunications } from '../../scripts/communications-api.js';
 import showAnnouncement from './announcement.js';
 import { downloadHtml, downloadPdf } from '../../scripts/communication-export.js';
+import { runReview, toast } from '../../scripts/review-dialog.js';
 
 const PAGE_SIZE = 10;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -55,8 +56,19 @@ function score(cell, query) {
   return terms.every((t) => cell.text.includes(t)) ? 1 : 0;
 }
 
-const ACTIONS = ['Edit', 'Review', 'Archive'];
-const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'Download PDF', 'Download HTML', 'View Properties', 'Version'];
+const ACTIONS = ['Edit', 'Archive'];
+
+// the next workflow step offered for a status (demo review actions; see scripts/review-dialog.js)
+const NEXT_STEP = {
+  DRAFT: ['Send to Reviewer', 'reviewer'],
+  'REVIEWER PENDING': ['Final Approval', 'final'],
+  'FINAL APPROVAL PENDING': ['Approve', 'approve'],
+};
+const REVIEW_DONE = {
+  reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'approved and moved to the archive', reopen: 'reopened as a draft',
+};
+const statusClass = (s) => `status-${String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'Download PDF', 'Download HTML', 'Reopen', 'View Properties', 'Version'];
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -168,6 +180,24 @@ export default async function decorate(block) {
     select.value = keep;
   }
 
+  async function review(r, action) {
+    try {
+      const out = await runReview(r.id, action);
+      if (action === 'approve' || action === 'reopen') {
+        // it now belongs on the other list; this one drops it at once
+        rows = rows.filter((x) => x.id !== r.id);
+      } else {
+        r.status = out.status;
+      }
+      index = buildIndex(rows, searchKeys);
+      Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
+      renderBody();
+      toast(`"${r.title}" ${REVIEW_DONE[action]}.`);
+    } catch (e) {
+      if (!e.cancelled) toast(e.message, 'error');
+    }
+  }
+
   function closeMenus() {
     block.querySelectorAll('.communications-menu').forEach((m) => m.remove());
   }
@@ -199,18 +229,24 @@ export default async function decorate(block) {
         closeMenus();
         if (open) return;
         const menu = el('ul', 'communications-menu');
+        // review steps only exist for communications that live in AEM (they have an asset path)
+        const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
         // a PDF can only be downloaded when one was exported for this communication
-        menuActions.filter((a) => a !== 'Download PDF' || r.pdf).forEach((a) => {
+        const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
+          .filter((a) => (a !== 'Download PDF' || r.pdf) && (a !== 'Reopen' || r.aemPath));
+        items.forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
           item.type = 'button';
           item.addEventListener('click', () => {
             closeMenus();
             const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
-            if (!proceed || !isArchive) return;
-            if (a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
-            if (a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
-            if (a === 'Download HTML') downloadHtml(r.fileName);
+            if (!proceed) return;
+            if (isArchive && a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
+            if (isArchive && a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
+            if (isArchive && a === 'Download HTML') downloadHtml(r.fileName);
+            const action = (step && a === step[0] && step[1]) || (a === 'Reopen' && 'reopen');
+            if (action) review(r, action);
           });
           li.append(item);
           menu.append(li);
@@ -234,7 +270,8 @@ export default async function decorate(block) {
       }
       tr.append(actions, lead);
       COLUMNS.forEach((c) => {
-        const td = el('td', c.date ? 'communications-date' : '', c.date ? formatDate(r[c.key]) : r[c.key]);
+        const td = el('td', c.date ? 'communications-date' : '', c.date || c.key === 'status' ? (c.date ? formatDate(r[c.key]) : '') : r[c.key]);
+        if (c.key === 'status') td.append(el('span', `communications-status ${statusClass(r.status)}`, r.status));
         if (c.info) {
           const i = el('span', 'communications-info', ' \u24D8');
           i.title = `Details for ${r[c.key]}`;

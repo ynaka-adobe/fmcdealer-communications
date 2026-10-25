@@ -277,3 +277,82 @@ dialog.announcement .announcement-create {
   box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
   color: #00095b;
 }
+
+/* status pills */
+.communications .communications-status {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: #e6e8ee;
+  color: #2b2f3a;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.communications .communications-status.status-draft { background: #e6e8ee; color: #2b2f3a; }
+.communications .communications-status.status-reviewer-pending { background: #fff1c2; color: #6b4a00; }
+.communications .communications-status.status-final-approval-pending { background: #d9e6ff; color: #0b2f78; }
+.communications .communications-status.status-approved { background: #d6f2de; color: #0d5a26; }
+.communications .communications-status.status-published { background: #0d5a26; color: #fff; }
+.communications .communications-status.status-unpublish { background: #f6d9d9; color: #7a1414; }
+
+/* demo review dialog and messages */
+.review-dialog {
+  border: 0;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 35%);
+  color: #00095b;
+}
+
+.review-dialog::backdrop { background: rgb(0 9 91 / 40%); }
+.review-dialog label { display: block; font-weight: 700; }
+
+.review-dialog input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 260px;
+  margin: 8px 0 16px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.review-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.review-dialog-actions button {
+  border: 1px solid #00095b;
+  border-radius: 2px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #00095b;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.review-dialog-actions button.review-dialog-ok { background: #00095b; color: #fff; }
+
+.review-toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 30;
+  display: grid;
+  gap: 8px;
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.review-toast {
+  margin: 0;
+  border-radius: 4px;
+  padding: 10px 14px;
+  background: #00095b;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+}
+
+.review-toast.review-toast-error { background: #9c1c1c; }
