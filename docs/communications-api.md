@@ -3,12 +3,22 @@
 The contract between the Edge Delivery site and the service that fronts AEM. The site is only
 the presentation layer: it never talks to AEM Author directly and holds no AEM credentials.
 
-Client: [scripts/communications-api.js](../scripts/communications-api.js). Two backends:
+Client: [scripts/communications-api.js](../scripts/communications-api.js). Page metadata (all values
+are same-origin paths) chooses where data comes from:
 
-| Backend | When | Behavior |
-|---|---|---|
-| mock (default) | no metadata | sample data; drafts kept in the browser session |
-| remote | page metadata `communications-api` = a same-origin path, for example `/api/fmc` | calls the endpoints below |
+| Metadata | Effect |
+|---|---|
+| none | mock: sample data; drafts kept in the browser session |
+| `communications-data` = `/data` | the **lists** are read from the published sheets `/data/notifications.json` (active) and `/data/archive.json`. Static, cached JSON: listing never calls AEM. |
+| `communications-api` = `/api/fmc` | the service for detail, create and status, called on submission and other key events |
+| `communications-draft-save` = `true` | each form step is saved through the service to a sheet (no AEM call) so a draft survives a reload and appears in the list |
+
+### Sheets
+
+Both list sheets have the columns `id, fileName, title, status, reviewer, author, created, modified,
+locked, aemPath` (every cell a string; `locked` is `true` or `false`). In-progress drafts are stored
+by the service as `/data/drafts/<id>.json` (never published). The service updates a sheet row and
+republishes only when the row actually changes, so saving a step that changes nothing is free.
 
 Only paths on the site's own origin are accepted as a base. Optional metadata
 `communications-poll` sets the list refresh interval in seconds (5 to 600, default 30).
@@ -46,6 +56,13 @@ attachment file names). Returns `201`:
 ```
 `422` when `title` is missing, `400` for invalid JSON. Attachment files are not part of this call;
 upload them separately once the draft exists.
+
+### PUT /drafts/{id}
+Saves the form's progress (body: the form state). `{id}` is `DRAFT-<14 digits>-<4 lowercase
+alphanumerics>`, chosen by the form. Stores the state in a sheet document and lists the draft
+(status DRAFT) in `/data/notifications.json`. Only the caller who started a draft can update it.
+`503` when the service has no DA credential, in which case the form just keeps the draft in the page.
+Submitting with `POST /communications` and the same `draftId` creates the AEM asset under that id.
 
 ### GET /communications/{id}/status
 ```json

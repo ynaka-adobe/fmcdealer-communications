@@ -2,7 +2,7 @@ import {
   CHANNELS, DEALER_GROUPS, DEALER_ROLES, DEPARTMENTS, DIVISIONS, FIELD_GROUPS, FIELD_ROLES,
   ROUTING,
 } from './create-draft-data.js';
-import { createDraft } from '../../scripts/communications-api.js';
+import { createDraft, saveDraftStep } from '../../scripts/communications-api.js';
 import { sanitizeHtml, richText } from './rich-text.js';
 
 const STEPS = 4;
@@ -393,7 +393,21 @@ function stepper(current) {
 }
 
 export default async function decorate(block) {
-  const state = { step: 1, dealerComm: '', originator: 'sgorle1', businessContact: 'sgorle1' };
+  const state = {
+    step: 1,
+    dealerComm: '',
+    originator: 'sgorle1',
+    businessContact: 'sgorle1',
+    // id for this draft: names its saved progress and ties it to the AEM asset on submit
+    draftId: `DRAFT-${new Date().toISOString().replace(/\D/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`,
+  };
+
+  /** Form state as plain data (attachment files become their names). */
+  const snapshot = () => {
+    const out = JSON.parse(JSON.stringify(state, (k, v) => (k === 'fieldFiles' || k === 'dealerFiles' ? v.map((f) => f.name) : v)));
+    delete out.step;
+    return out;
+  };
   try {
     const resp = await fetch('/auth/me', { credentials: 'same-origin', cache: 'no-store' });
     if (resp.ok && resp.headers.get('content-type')?.includes('json')) {
@@ -426,7 +440,11 @@ export default async function decorate(block) {
       b.addEventListener('click', fn);
       nav.append(b);
     };
-    const go = (n) => { state.step = n; render(); window.scrollTo({ top: 0 }); };
+    const go = (n) => {
+      // moving forward is a good moment to save progress (a sheet write, never an AEM call)
+      if (n > state.step && n <= 5) saveDraftStep(state.draftId, snapshot());
+      state.step = n; render(); window.scrollTo({ top: 0 });
+    };
 
     if (state.step === 1) {
       body.append(step1(state));
@@ -458,8 +476,7 @@ export default async function decorate(block) {
       const done = el('div', 'cd-card cd-narrow cd-done');
       done.append(el('h2', '', 'Submitting…'));
       body.append(done);
-      const payload = JSON.parse(JSON.stringify(state, (k, v) => (k === 'fieldFiles' || k === 'dealerFiles' ? v.map((f) => f.name) : v)));
-      delete payload.step;
+      const payload = snapshot();
       createDraft(payload).then(() => {
         done.textContent = '';
         done.append(el('h2', '', 'Draft created'), el('p', '', `“${state.title}” was saved as a draft.`));

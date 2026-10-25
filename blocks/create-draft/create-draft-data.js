@@ -60,6 +60,15 @@ export async function saveDraft(payload) {
   return record;
 }
 
+/** Remember a draft created through the service so this browser sees it before the sheet updates. */
+export function rememberDraft(record) {
+  try {
+    const drafts = JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '[]').filter((d) => d.id !== record.id);
+    drafts.unshift(record);
+    sessionStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+  } catch (e) { /* storage unavailable: it just shows up when the sheet does */ }
+}
+
 export function savedDrafts() {
   try {
     return JSON.parse(sessionStorage.getItem(DRAFTS_KEY) || '[]');
