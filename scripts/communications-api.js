@@ -93,6 +93,7 @@ export async function reviewCommunication(id, action, code) {
   if (!resp.ok) {
     const e = new Error(body.error || `The request failed (${resp.status}).`);
     e.status = resp.status;
+    e.caller = body.caller || '';
     throw e;
   }
   return body;

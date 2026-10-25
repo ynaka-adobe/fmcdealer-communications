@@ -69,10 +69,11 @@ export async function runReview(id, action) {
   // First try with the remembered code, or none: a signed-in employee needs no code, so the
   // prompt appears only when the service says one is required.
   let code = read();
+  let who = '';
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (!code && attempt > 0) {
       // eslint-disable-next-line no-await-in-loop
-      code = await prompt(attempt > 1 ? 'That code was not accepted. Enter the demo code' : 'Enter the demo code to continue');
+      code = await prompt(attempt > 1 ? 'That code was not accepted. Enter the demo code' : `Enter the demo code to continue${who ? ` (${who})` : ''}`);
       if (!code) { const e = new Error('Cancelled'); e.cancelled = true; throw e; }
     }
     try {
@@ -82,6 +83,9 @@ export async function runReview(id, action) {
       return out;
     } catch (e) {
       if (e.status !== 403) throw e;
+      if (e.caller === 'guest') who = 'you are signed in with a guest code, and guests need the demo code';
+      else if (e.caller === 'none') who = 'the site did not see a sign-in on this request';
+      else if (e.caller === 'employee') who = 'you are signed in as an employee, so this should not happen';
       write('');
       code = '';
     }
