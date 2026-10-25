@@ -105,7 +105,7 @@ export default async function decorate(block) {
     return;
   }
   const state = {
-    sortKey: null, sortDir: 1, filters: {}, page: 1,
+    sortKey: null, sortDir: 1, filters: {}, page: 1, tallest: 0,
   };
 
   block.textContent = '';
@@ -128,6 +128,7 @@ export default async function decorate(block) {
 
   // table
   const table = el('table');
+  const scroller = el('div', 'communications-scroll');
   const thead = el('thead');
   const tbody = el('tbody');
   table.append(thead, tbody);
@@ -298,6 +299,10 @@ export default async function decorate(block) {
       tbody.append(tr);
     });
 
+    // keep the table as tall as its fullest page so the pager does not jump up on a short page
+    state.tallest = Math.max(state.tallest, table.offsetHeight);
+    scroller.style.minHeight = state.tallest ? `${state.tallest}px` : '';
+
     // pagination
     pager.textContent = '';
     const addPage = (label, page, { current = false, disabled = false, aria } = {}) => {
@@ -376,6 +381,8 @@ export default async function decorate(block) {
   document.addEventListener('click', closeMenus);
   window.addEventListener('scroll', closeMenus, true);
   window.addEventListener('resize', closeMenus);
+  // row heights change with the width (titles wrap), so measure again after a resize
+  window.addEventListener('resize', () => { state.tallest = 0; scroller.style.minHeight = ''; });
   renderHead();
   renderBody();
   // pick up workflow status changes made in AEM (remote backend only)
@@ -385,7 +392,6 @@ export default async function decorate(block) {
     Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
     renderBody();
   });
-  const scroller = el('div', 'communications-scroll');
   scroller.append(table);
   block.append(toolbar, scroller, pager);
 }
