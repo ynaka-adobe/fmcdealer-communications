@@ -180,9 +180,21 @@ export default async function decorate(block) {
     select.value = keep;
   }
 
+  // A refresh can read a copy of the sheet from just before a change made here, so for a short
+  // while the page keeps the result it already knows: id -> { status, gone, until }
+  const settled = new Map();
+  const SETTLE_MS = 45000;
+  function applySettled(list) {
+    const now = Date.now();
+    settled.forEach((v, id) => { if (v.until < now) settled.delete(id); });
+    return list.filter((r) => !(settled.get(r.id) || {}).gone)
+      .map((r) => (settled.has(r.id) ? { ...r, status: settled.get(r.id).status } : r));
+  }
+
   async function review(r, action) {
     try {
       const out = await runReview(r.id, action);
+      settled.set(r.id, { status: out.status, gone: action === 'approve' || action === 'reopen', until: Date.now() + SETTLE_MS });
       if (action === 'approve' || action === 'reopen') {
         // it now belongs on the other list; this one drops it at once
         rows = rows.filter((x) => x.id !== r.id);
@@ -364,7 +376,7 @@ export default async function decorate(block) {
   renderBody();
   // pick up workflow status changes made in AEM (remote backend only)
   watchCommunications(isArchive ? 'archive' : 'active', (fresh) => {
-    rows = fresh;
+    rows = applySettled(fresh);
     index = buildIndex(rows, searchKeys);
     Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
     renderBody();
