@@ -92,22 +92,36 @@
   background: #1a2480;
 }
 
+/* every action looks the same: outlined, equal height, navy */
 .communication-preview-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin: 0 0 12px;
 }
 
-.communication-preview-actions a {
-  display: inline-block;
+.communication-preview .communication-preview-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 38px;
+  margin: 0;
   border: 1px solid var(--comm-navy, #00095b);
   border-radius: 2px;
-  padding: 8px 16px;
+  padding: 0 16px;
+  background: #fff;
+  color: var(--comm-navy, #00095b);
+  font: inherit;
   font-size: 14px;
+  line-height: 1;
   text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.communication-preview-actions a.communication-preview-download {
+.communication-preview .communication-preview-button:hover,
+.communication-preview .communication-preview-button:focus-visible {
   background: var(--comm-navy, #00095b);
   color: #fff;
 }
@@ -123,13 +137,3 @@
   border: 1px solid #ccc;
 }
 
-.communication-preview-actions button {
-  border: 1px solid var(--comm-navy, #00095b);
-  border-radius: 2px;
-  padding: 8px 16px;
-  background: #fff;
-  color: var(--comm-navy, #00095b);
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-}

@@ -39,6 +39,21 @@ export async function downloadHtml(file) {
   return true;
 }
 
+/**
+ * Show a communication's HTML in a new tab. The tab is opened first, inside the click, so a
+ * popup blocker allows it, and is pointed at the page once the content has loaded.
+ */
+export async function openHtml(file) {
+  const tab = window.open('', '_blank');
+  const detail = await getCommunicationDetail(file);
+  if (!detail || !tab) { if (tab) tab.close(); return false; }
+  const url = URL.createObjectURL(new Blob([buildHtml(detail)], { type: 'text/html' }));
+  tab.opener = null;
+  tab.location.href = url;
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return true;
+}
+
 export function downloadPdf(path, file) {
   save(path, `${file}.pdf`);
 }
