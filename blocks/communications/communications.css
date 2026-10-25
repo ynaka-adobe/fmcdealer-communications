@@ -267,3 +267,11 @@ dialog.announcement .announcement-create {
   font-size: 13px;
   font-weight: 600;
 }
+
+.communications p.communications-error {
+  margin: 24px 0;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 12%);
+  color: #00095b;
+}

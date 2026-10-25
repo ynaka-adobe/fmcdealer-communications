@@ -45,7 +45,24 @@ export default async function decorate(block) {
   const isArchive = block.classList.contains('archive');
   const COLUMNS = isArchive ? ARCHIVE_COLUMNS : ACTIVE_COLUMNS;
   const menuActions = isArchive ? ARCHIVE_ACTIONS : ACTIONS;
-  let rows = await listCommunications(isArchive ? 'archive' : 'active');
+  let rows;
+  try {
+    rows = await listCommunications(isArchive ? 'archive' : 'active');
+  } catch (e) {
+    // the service answers 401 when the session has ended; anything else is a service problem
+    const signedOut = /communications api 401/.test(e && e.message);
+    block.textContent = '';
+    const msg = el('p', 'communications-error');
+    if (signedOut) {
+      const link = el('a', '', 'Sign in');
+      link.href = `/auth/login?returnTo=${encodeURIComponent(`${window.location.pathname}${window.location.search}`)}`;
+      msg.append('Your session has ended. ', link, ' to see communications.');
+    } else {
+      msg.textContent = 'Communications are unavailable right now. Please try again shortly.';
+    }
+    block.append(msg);
+    return;
+  }
   const state = {
     sortKey: null, sortDir: 1, filters: {}, page: 1,
   };
