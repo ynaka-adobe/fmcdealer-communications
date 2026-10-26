@@ -16,7 +16,7 @@
     <rect x="472" y="62" width="200" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="484" y="86" font-weight="700">Preview</text><text x="484" y="106">PDF viewer, HTML, downloads</text>
     <rect x="720" y="62" width="340" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="732" y="86" font-weight="700">AEM Edge Function</text><text x="732" y="106">sign-in (Okta), guest codes, /api/fmc proxy</text>
     <rect x="40" y="140" width="632" height="44" rx="6" fill="#fff" stroke="#00095b"/><text x="52" y="160" font-weight="700">Document Authoring sheets</text><text x="52" y="177">/data/notifications and /data/archive: the lists, served as cached JSON</text>
-    <rect x="720" y="140" width="340" height="44" rx="6" fill="#fff" stroke="#00095b"/><text x="732" y="160" font-weight="700">Hosted deliverables</text><text x="732" y="177">/pdfs/&lt;id&gt;.pdf on the site's own origin</text>
+    <rect x="720" y="140" width="340" height="44" rx="6" fill="#fff" stroke="#00095b"/><text x="732" y="160" font-weight="700">Hosted deliverables</text><text x="732" y="177">/pdfs/&lt;id&gt;.pdf, copied from Author</text>
   </g>
 
   <!-- layer 2: app builder -->
@@ -36,8 +36,8 @@
   <text x="40" y="548" font-size="16" font-weight="700" fill="#9a3412">CONTENT AND WORKFLOW  ·  AEM as a Cloud Service (Author)</text>
   <g font-size="13" fill="#9a3412">
     <rect x="40" y="562" width="330" height="140" rx="6" fill="#fff" stroke="#9a3412"/><text x="52" y="586" font-weight="700">AEM Assets: the source of truth</text><text x="52" y="608">each communication is a folder holding</text><text x="52" y="625">a DITA topic, a DITA map and an HTML preview;</text><text x="52" y="642">status, reviewer, audiences, dates and the PDF</text><text x="52" y="659">link are metadata; versions keep the history</text>
-    <rect x="386" y="562" width="330" height="140" rx="6" fill="#fff" stroke="#9a3412"/><text x="398" y="586" font-weight="700">AEM Guides: one source, two outputs</text><text x="398" y="608">output presets on the map produce PDF and HTML5;</text><text x="398" y="625">a DITAVAL filter drops field-only content from</text><text x="398" y="642">the dealer version; generation is started and</text><text x="398" y="659">followed through Guides' own calls</text>
-    <rect x="732" y="562" width="328" height="140" rx="6" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="7 5"/><text x="744" y="586" font-weight="700" fill="#b45309">AEM Workflow: review and approval</text><text x="744" y="608" fill="#b45309">OPEN. Today the service sets the review</text><text x="744" y="625" fill="#b45309">states. Target: an AEM workflow routes the</text><text x="744" y="642" fill="#b45309">review, correction and final approval, and</text><text x="744" y="659" fill="#b45309">App Builder reacts to its events</text>
+    <rect x="386" y="562" width="330" height="140" rx="6" fill="#fff" stroke="#9a3412"/><text x="398" y="586" font-weight="700">AEM Guides: one source, two outputs</text><text x="398" y="608">Guides first recognizes the map (post-processing).</text><text x="398" y="625">Global presets (pdf, html5) then generate it; each</text><text x="398" y="642">applies dealer.ditaval to drop field-only content.</text><text x="398" y="659">Started and followed via Guides' own calls</text>
+    <rect x="732" y="562" width="328" height="140" rx="6" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="7 5"/><text x="744" y="586" font-weight="700" fill="#b45309">AEM Workflow: two-level review</text><text x="744" y="608" fill="#b45309">Target, from the AEM team: a draft passes two</text><text x="744" y="625" fill="#b45309">review levels in AEM, and final approval starts</text><text x="744" y="642" fill="#b45309">generation. The demo sets these states from</text><text x="744" y="659" fill="#b45309">App Builder until the two are connected.</text>
   </g>
 
   <!-- connectors in the gaps between the layers -->
@@ -61,6 +61,6 @@
   <!-- legend -->
   <g font-size="12" fill="#333">
     <rect x="40" y="744" width="26" height="12" fill="#fff" stroke="#00095b"/><text x="74" y="754">built and tested</text>
-    <rect x="200" y="744" width="26" height="12" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="5 3"/><text x="234" y="754">target or open: being confirmed with the AEM team</text>
+    <rect x="200" y="744" width="26" height="12" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="5 3"/><text x="234" y="754">target: designed with the AEM team, not yet connected to the demo</text>
   </g>
 </svg>
