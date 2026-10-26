@@ -26,7 +26,12 @@ const ARCHIVE_COLUMNS = [
   { key: 'reviewer', label: 'Reviewer', sort: true, filter: true, select: true },
   { key: 'author', label: 'Author', sort: true, filter: true, select: true },
   { key: 'created', label: 'Created Date', sort: true, date: true },
+  { key: 'modified', label: 'Modified Date', sort: true, date: true },
 ];
+
+// A reference only means something for real communication numbers (EFC260061); the id the
+// site gives a draft (DRAFT-<time>-<code>) is plumbing, so it is not shown.
+const SITE_ID = /^DRAFT-\d{14}-[a-z0-9]{4}$/;
 
 // workflow order for the Status list; any other value sorts after these, alphabetically
 const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'PDF ERROR', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
@@ -85,7 +90,7 @@ function el(tag, className, text) {
 
 export default async function decorate(block) {
   const isArchive = block.classList.contains('archive');
-  const COLUMNS = isArchive ? ARCHIVE_COLUMNS : ACTIVE_COLUMNS;
+
   const menuActions = isArchive ? ARCHIVE_ACTIONS : ACTIONS;
   let rows;
   try {
@@ -105,27 +110,44 @@ export default async function decorate(block) {
     block.append(msg);
     return;
   }
+  // the File Name column only when some communication has a real number, so both pages share
+  // one layout; a locked communication is marked next to its title
+  const COLUMNS = (isArchive ? ARCHIVE_COLUMNS : ACTIVE_COLUMNS)
+    .filter((c) => c.key !== 'fileName' || rows.some((r) => r.fileName && !SITE_ID.test(r.fileName)));
+  const leadCount = 1;
   const state = {
     sortKey: null, sortDir: 1, filters: {}, page: 1, tallest: 0,
   };
 
   block.textContent = '';
 
-  // toolbar
+  // header band: breadcrumb on the left, actions on the right, the same on both pages
   const toolbar = el('div', 'communications-toolbar');
   if (!isArchive) {
     const archive = el('a', 'communications-button', 'View Archive');
     archive.href = '/archive';
-    const create = el('button', 'communications-button', 'Create Draft');
-    create.type = 'button';
-    create.addEventListener('click', async () => {
-      const proceed = block.dispatchEvent(new CustomEvent('communications:create-draft', { bubbles: true, cancelable: true }));
-      if (!proceed) return;
-      if (shouldShowAnnouncement() && !(await showAnnouncement())) return;
-      window.location.href = '/create-draft';
-    });
-    toolbar.append(archive, create);
+    toolbar.append(archive);
   }
+  const create = el('button', 'communications-button', 'Create Draft');
+  create.type = 'button';
+  create.addEventListener('click', async () => {
+    const proceed = block.dispatchEvent(new CustomEvent('communications:create-draft', { bubbles: true, cancelable: true }));
+    if (!proceed) return;
+    if (shouldShowAnnouncement() && !(await showAnnouncement())) return;
+    window.location.href = '/create-draft';
+  });
+  toolbar.append(create);
+  // the archive page authors its own "Home › View Archive"; the home page is just "Home"
+  let crumb = document.querySelector('main .breadcrumb');
+  if (!crumb) {
+    crumb = el('nav', 'breadcrumb');
+    crumb.setAttribute('aria-label', 'Breadcrumb');
+    const here = el('h1', '', 'Home');
+    here.setAttribute('aria-current', 'page');
+    crumb.append(here);
+  }
+  const bar = el('div', 'communications-bar');
+  bar.append(crumb, toolbar);
 
   // table
   const table = el('table');
@@ -231,7 +253,7 @@ export default async function decorate(block) {
     if (!slice.length) {
       const tr = el('tr');
       const td = el('td', 'communications-empty', 'No communications found');
-      td.colSpan = COLUMNS.length + 2;
+      td.colSpan = COLUMNS.length + leadCount;
       tr.append(td);
       tbody.append(tr);
     }
@@ -278,23 +300,26 @@ export default async function decorate(block) {
         menu.style.left = `${Math.min(k.left, window.innerWidth - m.width - 8)}px`;
       });
       actions.append(kebab);
-      const lead = el('td', 'communications-change');
-      if (isArchive && r.locked) {
-        const lock = el('span', 'communications-info', '\u24D8');
-        lock.title = 'Locked';
-        lock.setAttribute('role', 'img');
-        lock.setAttribute('aria-label', 'Locked');
-        lead.append(lock);
-      }
-      tr.append(actions, lead);
+      tr.append(actions);
       COLUMNS.forEach((c) => {
-        const td = el('td', c.date ? 'communications-date' : '', c.date || c.key === 'status' ? (c.date ? formatDate(r[c.key]) : '') : r[c.key]);
+        let text = r[c.key];
+        if (c.date) text = formatDate(r[c.key]);
+        else if (c.key === 'status') text = '';
+        else if (c.key === 'fileName' && SITE_ID.test(r.fileName)) text = '\u2014';
+        const td = el('td', c.date ? 'communications-date' : '', text);
+        if (c.key === 'title' && r.locked) {
+          const lock = el('span', 'communications-info', '\u24D8 ');
+          lock.title = 'Locked';
+          lock.setAttribute('role', 'img');
+          lock.setAttribute('aria-label', 'Locked');
+          td.prepend(lock);
+        }
         if (c.key === 'status') {
           const pill = el('span', `communications-status ${statusClass(r.status)}`, r.status);
           if (r.note) pill.title = r.note; // why a PDF failed
           td.append(pill);
         }
-        if (c.info) {
+        if (c.info && !SITE_ID.test(r.fileName)) {
           const i = el('span', 'communications-info', ' \u24D8');
           i.title = `Details for ${r[c.key]}`;
           td.append(i);
@@ -330,8 +355,8 @@ export default async function decorate(block) {
     thead.textContent = '';
     const labels = el('tr');
     const filters = el('tr', 'communications-filters');
-    labels.append(el('th', '', 'Actions'), el('th', '', isArchive ? 'Locked' : 'Change'));
-    filters.append(el('th'), el('th'));
+    labels.append(el('th', '', 'Actions'));
+    filters.append(el('th'));
     COLUMNS.forEach((c) => {
       const th = el('th');
       th.setAttribute('scope', 'col');
@@ -398,5 +423,5 @@ export default async function decorate(block) {
     renderBody();
   });
   scroller.append(table);
-  block.append(toolbar, scroller, pager);
+  block.append(bar, scroller, pager);
 }

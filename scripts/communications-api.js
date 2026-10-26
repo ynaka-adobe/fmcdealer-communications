@@ -121,8 +121,9 @@ export async function listCommunications(type = 'active') {
       const fresh = (d) => Date.now() - Date.parse(`${d.created}Z`) < 3 * 60 * 1000;
       savedDrafts().filter((d) => !known.has(d.id) && fresh(d)).forEach((d) => rows.push(fromSheetRow(d)));
     }
-    // the active list is newest first; the archive keeps the sheet's order
-    return type === 'archive' ? rows : rows.sort((a, b) => String(b.modified).localeCompare(String(a.modified)));
+    // both lists: most recently changed first
+    const when = (r) => String(r.modified || r.created || '');
+    return rows.sort((a, b) => when(b).localeCompare(when(a)));
   }
   if (isRemote()) return request(`/communications?type=${encodeURIComponent(type)}`);
   const { default: getCommunications } = await import(MOCK_DATA);
