@@ -375,3 +375,5 @@ dialog.announcement .announcement-create {
 .communications .communications-bar .communications-toolbar {
   margin: 0;
 }
+
+.communications .communications-status.status-archived { background: #e4e7ef; color: #3d4560; }

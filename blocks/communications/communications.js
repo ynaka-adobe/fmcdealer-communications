@@ -34,7 +34,7 @@ const ARCHIVE_COLUMNS = [
 const SITE_ID = /^DRAFT-\d{14}-[a-z0-9]{4}$/;
 
 // workflow order for the Status list; any other value sorts after these, alphabetically
-const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'PDF ERROR', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
+const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'PDF ERROR', 'APPROVED', 'PUBLISHED', 'ARCHIVED', 'UNPUBLISH'];
 
 // Text search: each cell is folded to lower case without accents and split into words once per
 // row set (the "index"). A query matches when every query word starts a word of the cell, in any
@@ -276,7 +276,7 @@ export default async function decorate(block) {
         const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
         // a PDF can only be downloaded when one was exported for this communication
         // a published communication stays on Home (nothing archives it by itself), so it needs the
-        // same viewing actions as the archive, plus Archive; Restore brings one back
+        // same viewing actions as the archive, plus Archive (status ARCHIVED); Restore brings it back
         const published = r.aemPath && r.status === 'PUBLISHED';
         const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
           .filter((a) => {
@@ -284,7 +284,7 @@ export default async function decorate(block) {
             if (a === 'Preview' || a === 'Download HTML') return isArchive || published;
             if (a === 'Download PDF') return r.pdf && (isArchive || published);
             if (a === 'Archive') return published;
-            if (a === 'Restore') return published;
+            if (a === 'Restore') return r.aemPath && r.status === 'ARCHIVED';
             if (a === 'Reopen') return r.aemPath;
             return true;
           });
