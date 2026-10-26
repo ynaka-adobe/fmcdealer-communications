@@ -78,6 +78,20 @@ async function request(path, init = {}) {
   return resp.status === 204 ? null : resp.json();
 }
 
+/** A draft's form state, for editing it (rejects with the HTTP status in the message). */
+export async function loadDraftForEdit(id) {
+  return request(`/communications/${encodeURIComponent(id)}?edit=1`);
+}
+
+/** Save an edited draft back to the same communication. */
+export async function updateDraft(id, payload) {
+  return request(`/drafts/${encodeURIComponent(id)}?submit=1`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
 /**
  * Demo review action on one communication: 'reviewer', 'final', 'approve' or 'reopen'.
  * Rejects with an Error whose message is the service's reason and whose `status` is the HTTP status.

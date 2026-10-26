@@ -2,7 +2,9 @@ import {
   CHANNELS, DEALER_GROUPS, DEALER_ROLES, DEPARTMENTS, DIVISIONS, FIELD_GROUPS, FIELD_ROLES,
   ROUTING,
 } from './create-draft-data.js';
-import { createDraft, saveDraftStep } from '../../scripts/communications-api.js';
+import {
+  createDraft, saveDraftStep, loadDraftForEdit, updateDraft,
+} from '../../scripts/communications-api.js';
 import { sanitizeHtml, richText } from './rich-text.js';
 
 const STEPS = 4;
@@ -419,9 +421,37 @@ export default async function decorate(block) {
 
   const toList = () => { window.location.href = '/'; };
 
+  // Editing: /create-draft?edit=<id> fills the form with that draft and saves back to it
+  const editId = new URLSearchParams(window.location.search).get('edit');
+  let editing = null;
+  if (editId) {
+    try {
+      editing = await loadDraftForEdit(editId);
+      Object.assign(state, editing.state, { draftId: editId, step: 1 });
+    } catch (e) {
+      block.textContent = '';
+      const card = el('div', 'cd-card cd-narrow cd-done');
+      card.append(el('h2', '', 'This draft cannot be edited'), el('p', '', /\b40[39]\b/.test(e.message)
+        ? 'Only a draft, or a draft in review, can be edited, and only by the person who made it.'
+        : 'It could not be loaded. Please try again.'));
+      const back = el('a', 'cd-btn cd-btn-blue', 'Back to Communications');
+      back.href = '/';
+      card.append(back);
+      block.append(card);
+      return;
+    }
+  }
+
   function render() {
     block.textContent = '';
     const preview = state.step > STEPS;
+    if (editing && !preview) {
+      const banner = el('p', 'cd-edit-banner', `Editing \u201C${state.title || editId}\u201D`);
+      if (editing.source === 'metadata') {
+        banner.append(el('span', '', ' \u2014 this draft was created before editing was available, so please re-enter the message text.'));
+      }
+      block.append(banner);
+    }
     if (!preview) block.append(stepper(state.step));
     const body = el('div', 'cd-body');
     const clearError = (e) => {
@@ -442,7 +472,7 @@ export default async function decorate(block) {
     };
     const go = (n) => {
       // moving forward is a good moment to save progress (a sheet write, never an AEM call)
-      if (n > state.step && n <= 5) saveDraftStep(state.draftId, snapshot());
+      if (!editing && n > state.step && n <= 5) saveDraftStep(state.draftId, snapshot());
       state.step = n; render(); window.scrollTo({ top: 0 });
     };
 
@@ -477,9 +507,9 @@ export default async function decorate(block) {
       done.append(el('h2', '', 'Submitting…'));
       body.append(done);
       const payload = snapshot();
-      createDraft(payload).then(() => {
+      (editing ? updateDraft(editId, payload) : createDraft(payload)).then(() => {
         done.textContent = '';
-        done.append(el('h2', '', 'Draft created'), el('p', '', `“${state.title}” was saved as a draft.`));
+        done.append(el('h2', '', editing ? 'Changes saved' : 'Draft created'), el('p', '', editing ? `\u201C${state.title}\u201D was updated.` : `“${state.title}” was saved as a draft.`));
         const home = el('a', 'cd-btn cd-btn-blue', 'Back to Communications');
         home.href = '/';
         done.append(home);

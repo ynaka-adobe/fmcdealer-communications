@@ -467,3 +467,12 @@
 .create-draft .cd-done h2 {
   margin-top: 0;
 }
+
+.create-draft .cd-edit-banner {
+  margin: 0 0 16px;
+  border-left: 4px solid #00095b;
+  padding: 8px 12px;
+  background: #eef0f8;
+  color: #00095b;
+  font-size: 14px;
+}

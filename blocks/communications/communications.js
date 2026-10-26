@@ -70,6 +70,8 @@ const NEXT_STEP = {
   'FINAL APPROVAL PENDING': ['Approve', 'approve'],
   'PDF ERROR': ['Retry PDF', 'approve'],
 };
+// Edit is offered for a draft made on the site while it is a draft or in review
+const EDITABLE_STATUS = ['DRAFT', 'REVIEWER PENDING'];
 const REVIEW_DONE = {
   reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'approved and moved to the archive', reopen: 'reopened as a draft',
 };
@@ -273,7 +275,8 @@ export default async function decorate(block) {
         const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
         // a PDF can only be downloaded when one was exported for this communication
         const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
-          .filter((a) => (a !== 'Download PDF' || r.pdf) && (a !== 'Reopen' || r.aemPath));
+          .filter((a) => (a !== 'Download PDF' || r.pdf) && (a !== 'Reopen' || r.aemPath)
+            && (a !== 'Edit' || (r.aemPath && SITE_ID.test(r.id) && EDITABLE_STATUS.includes(r.status))));
         items.forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
@@ -282,6 +285,7 @@ export default async function decorate(block) {
             closeMenus();
             const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
             if (!proceed) return;
+            if (!isArchive && a === 'Edit') window.location.href = `/create-draft?edit=${encodeURIComponent(r.id)}`;
             if (isArchive && a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
             if (isArchive && a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
             if (isArchive && a === 'Download HTML') downloadHtml(r.fileName);
