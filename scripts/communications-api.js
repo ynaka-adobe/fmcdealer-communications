@@ -55,6 +55,7 @@ function fromSheetRow(r) {
     modified: r.modified || r.created || '',
     locked: String(r.locked).toLowerCase() === 'true',
     aemPath: r.aemPath || '',
+    note: r.note || '',
     pdf: /^\/[\w./-]+\.pdf$/i.test(r.pdf || '') ? r.pdf : '', // a site path only
   };
 }

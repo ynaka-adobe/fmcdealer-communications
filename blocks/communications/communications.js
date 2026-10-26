@@ -29,7 +29,7 @@ const ARCHIVE_COLUMNS = [
 ];
 
 // workflow order for the Status list; any other value sorts after these, alphabetically
-const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
+const STATUS_ORDER = ['DRAFT', 'REVIEWER PENDING', 'FINAL APPROVAL PENDING', 'GENERATING PDF', 'PDF ERROR', 'APPROVED', 'PUBLISHED', 'UNPUBLISH'];
 
 // Text search: each cell is folded to lower case without accents and split into words once per
 // row set (the "index"). A query matches when every query word starts a word of the cell, in any
@@ -63,6 +63,7 @@ const NEXT_STEP = {
   DRAFT: ['Send to Reviewer', 'reviewer'],
   'REVIEWER PENDING': ['Final Approval', 'final'],
   'FINAL APPROVAL PENDING': ['Approve', 'approve'],
+  'PDF ERROR': ['Retry PDF', 'approve'],
 };
 const REVIEW_DONE = {
   reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'approved and moved to the archive', reopen: 'reopened as a draft',
@@ -288,7 +289,11 @@ export default async function decorate(block) {
       tr.append(actions, lead);
       COLUMNS.forEach((c) => {
         const td = el('td', c.date ? 'communications-date' : '', c.date || c.key === 'status' ? (c.date ? formatDate(r[c.key]) : '') : r[c.key]);
-        if (c.key === 'status') td.append(el('span', `communications-status ${statusClass(r.status)}`, r.status));
+        if (c.key === 'status') {
+          const pill = el('span', `communications-status ${statusClass(r.status)}`, r.status);
+          if (r.note) pill.title = r.note; // why a PDF failed
+          td.append(pill);
+        }
         if (c.info) {
           const i = el('span', 'communications-info', ' \u24D8');
           i.title = `Details for ${r[c.key]}`;
