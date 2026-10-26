@@ -3,7 +3,7 @@ import {
   ROUTING,
 } from './create-draft-data.js';
 import {
-  createDraft, saveDraftStep, loadDraftForEdit, updateDraft,
+  createDraft, saveDraftStep, loadDraftForEdit, loadDraftForCopy, updateDraft,
 } from '../../scripts/communications-api.js';
 import { sanitizeHtml, richText } from './rich-text.js';
 
@@ -421,6 +421,27 @@ export default async function decorate(block) {
 
   const toList = () => { window.location.href = '/'; };
 
+  // Copy As New: /create-draft?copy=<id> starts a NEW draft filled in from that communication;
+  // the original stays exactly as it was
+  const copyId = new URLSearchParams(window.location.search).get('copy');
+  let copying = null;
+  if (copyId) {
+    try {
+      copying = await loadDraftForCopy(copyId);
+      const mine = { originator: state.originator, businessContact: state.businessContact, draftId: state.draftId };
+      Object.assign(state, copying.state, mine, { step: 1, title: `Copy of ${copying.state.title || copying.title}` });
+    } catch (e) {
+      block.textContent = '';
+      const card = el('div', 'cd-card cd-narrow cd-done');
+      card.append(el('h2', '', 'This communication cannot be copied'), el('p', '', 'It could not be loaded. Please try again.'));
+      const back = el('a', 'cd-btn cd-btn-blue', 'Back to Communications');
+      back.href = '/';
+      card.append(back);
+      block.append(card);
+      return;
+    }
+  }
+
   // Editing: /create-draft?edit=<id> fills the form with that draft and saves back to it
   const editId = new URLSearchParams(window.location.search).get('edit');
   let editing = null;
@@ -445,6 +466,13 @@ export default async function decorate(block) {
   function render() {
     block.textContent = '';
     const preview = state.step > STEPS;
+    if (copying && !preview) {
+      const banner = el('p', 'cd-edit-banner', `Copying \u201C${copying.title}\u201D \u2014 saving creates a new draft; the original stays as it is.`);
+      if (copying.source === 'metadata') {
+        banner.append(el('span', '', ' This record has no saved message text, so please enter it again.'));
+      }
+      block.append(banner);
+    }
     if (editing && !preview) {
       const banner = el('p', 'cd-edit-banner', `Editing \u201C${state.title || editId}\u201D`);
       if (editing.source === 'metadata') {

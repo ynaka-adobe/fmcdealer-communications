@@ -286,6 +286,7 @@ export default async function decorate(block) {
             if (a === 'Archive') return published;
             if (a === 'Restore') return r.aemPath && r.status === 'ARCHIVED';
             if (a === 'Reopen') return r.aemPath;
+            if (a === 'Copy As New') return r.aemPath; // only a communication that lives in AEM can be copied
             return true;
           });
         items.forEach((a) => {
@@ -297,6 +298,7 @@ export default async function decorate(block) {
             const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
             if (!proceed) return;
             if (!isArchive && a === 'Edit') window.location.href = `/create-draft?edit=${encodeURIComponent(r.id)}`;
+            if (a === 'Copy As New') window.location.href = `/create-draft?copy=${encodeURIComponent(r.id)}`;
             if (a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
             if (a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
             if (a === 'Download HTML') downloadHtml(r.fileName);

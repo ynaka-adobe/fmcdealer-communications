@@ -83,6 +83,11 @@ export async function loadDraftForEdit(id) {
   return request(`/communications/${encodeURIComponent(id)}?edit=1`);
 }
 
+/** A communication's form state, to start a new draft from it (the original is not touched). */
+export async function loadDraftForCopy(id) {
+  return request(`/communications/${encodeURIComponent(id)}?copy=1`);
+}
+
 /** Save an edited draft back to the same communication. */
 export async function updateDraft(id, payload) {
   return request(`/drafts/${encodeURIComponent(id)}?submit=1`, {
