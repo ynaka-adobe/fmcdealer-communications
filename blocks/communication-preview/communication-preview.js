@@ -42,12 +42,14 @@ function actionBar({
 
 export default async function decorate(block) {
   const file = new URLSearchParams(window.location.search).get('file');
-  // an approved communication may have a PDF exported from AEM Guides, hosted on this site
-  const [detail, archived] = await Promise.all([
+  // a published communication has a PDF exported from AEM Guides, hosted on this site. It may be
+  // on the home list or filed in the archive, so look in both.
+  const [detail, archived, current] = await Promise.all([
     getCommunicationDetail(file),
     listCommunications('archive').catch(() => []),
+    listCommunications('active').catch(() => []),
   ]);
-  const entry = archived.find((r) => r.fileName === file || r.id === file);
+  const entry = [...current, ...archived].find((r) => r.fileName === file || r.id === file);
   const pdf = entry && entry.pdf;
   block.textContent = '';
 
