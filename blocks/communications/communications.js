@@ -61,7 +61,7 @@ function score(cell, query) {
   return terms.every((t) => cell.text.includes(t)) ? 1 : 0;
 }
 
-const ACTIONS = ['Edit', 'Archive'];
+const ACTIONS = ['Edit', 'Preview', 'Download PDF', 'Download HTML', 'Archive'];
 
 // the next workflow step offered for a status (demo review actions; see scripts/review-dialog.js)
 const NEXT_STEP = {
@@ -73,10 +73,10 @@ const NEXT_STEP = {
 // Edit is offered for a draft made on the site while it is a draft or in review
 const EDITABLE_STATUS = ['DRAFT', 'REVIEWER PENDING'];
 const REVIEW_DONE = {
-  reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'approved and moved to the archive', reopen: 'reopened as a draft',
+  reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'published', reopen: 'reopened as a draft', archive: 'moved to the archive', restore: 'moved back to Home',
 };
 const statusClass = (s) => `status-${String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
-const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'Download PDF', 'Download HTML', 'Reopen', 'View Properties', 'Version'];
+const ARCHIVE_ACTIONS = ['Copy As New', 'Preview', 'Download PDF', 'Download HTML', 'Restore', 'Reopen', 'View Properties', 'Version'];
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -221,7 +221,8 @@ export default async function decorate(block) {
     try {
       const out = await runReview(r.id, action);
       // approving starts PDF generation; the row leaves this list only once it is APPROVED
-      const gone = out.status === 'APPROVED' || action === 'reopen';
+      // approving starts PDF generation and stays here; archiving, restoring and reopening move it to the other list
+      const gone = ['archive', 'restore', 'reopen'].includes(action);
       settled.set(r.id, { status: out.status, gone, until: Date.now() + SETTLE_MS });
       if (gone) {
         // it now belongs on the other list; this one drops it at once
@@ -274,9 +275,19 @@ export default async function decorate(block) {
         // review steps only exist for communications that live in AEM (they have an asset path)
         const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
         // a PDF can only be downloaded when one was exported for this communication
+        // a published communication stays on Home (nothing archives it by itself), so it needs the
+        // same viewing actions as the archive, plus Archive; Restore brings one back
+        const published = r.aemPath && r.status === 'PUBLISHED';
         const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
-          .filter((a) => (a !== 'Download PDF' || r.pdf) && (a !== 'Reopen' || r.aemPath)
-            && (a !== 'Edit' || (r.aemPath && SITE_ID.test(r.id) && EDITABLE_STATUS.includes(r.status))));
+          .filter((a) => {
+            if (a === 'Edit') return r.aemPath && SITE_ID.test(r.id) && EDITABLE_STATUS.includes(r.status);
+            if (a === 'Preview' || a === 'Download HTML') return isArchive || published;
+            if (a === 'Download PDF') return r.pdf && (isArchive || published);
+            if (a === 'Archive') return published;
+            if (a === 'Restore') return published;
+            if (a === 'Reopen') return r.aemPath;
+            return true;
+          });
         items.forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
@@ -286,10 +297,11 @@ export default async function decorate(block) {
             const proceed = block.dispatchEvent(new CustomEvent(`communications:${a.toLowerCase().replace(/\s+/g, '-')}`, { bubbles: true, cancelable: true, detail: r }));
             if (!proceed) return;
             if (!isArchive && a === 'Edit') window.location.href = `/create-draft?edit=${encodeURIComponent(r.id)}`;
-            if (isArchive && a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
-            if (isArchive && a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
-            if (isArchive && a === 'Download HTML') downloadHtml(r.fileName);
-            const action = (step && a === step[0] && step[1]) || (a === 'Reopen' && 'reopen');
+            if (a === 'Preview') window.location.href = `/preview?file=${encodeURIComponent(r.fileName)}`;
+            if (a === 'Download PDF') downloadPdf(r.pdf, r.fileName);
+            if (a === 'Download HTML') downloadHtml(r.fileName);
+            const action = (step && a === step[0] && step[1])
+              || ({ Reopen: 'reopen', Archive: 'archive', Restore: 'restore' })[a];
             if (action) review(r, action);
           });
           li.append(item);
