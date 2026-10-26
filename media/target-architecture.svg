@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" width="1100" height="780" font-family="Poppins, Arial, Helvetica, sans-serif">
+  <title>FMC Dealer Communications: target architecture</title>
+  <desc>Experience layer on AEM Edge Delivery, services on Adobe App Builder, content and workflow in AEM as a Cloud Service.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#333"/></marker>
+    <marker id="o" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker>
+  </defs>
+  <rect width="1100" height="780" fill="#ffffff"/>
+
+  <!-- layer 1: experience -->
+  <rect x="20" y="20" width="1060" height="180" rx="8" fill="#eef2ff" stroke="#00095b" stroke-width="1.5"/>
+  <text x="40" y="48" font-size="16" font-weight="700" fill="#00095b">EXPERIENCE  ·  AEM Edge Delivery Services (presentation only)</text>
+  <g font-size="13" fill="#00095b">
+    <rect x="40" y="62" width="200" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="52" y="86" font-weight="700">Home and Archive</text><text x="52" y="106">lists, search, filters, paging</text>
+    <rect x="256" y="62" width="200" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="268" y="86" font-weight="700">Create, copy, edit</text><text x="268" y="106">draft form, rich text</text>
+    <rect x="472" y="62" width="200" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="484" y="86" font-weight="700">Preview</text><text x="484" y="106">PDF viewer, HTML, downloads</text>
+    <rect x="720" y="62" width="340" height="62" rx="6" fill="#fff" stroke="#00095b"/><text x="732" y="86" font-weight="700">AEM Edge Function</text><text x="732" y="106">sign-in (Okta), guest codes, /api/fmc proxy</text>
+    <rect x="40" y="140" width="632" height="44" rx="6" fill="#fff" stroke="#00095b"/><text x="52" y="160" font-weight="700">Document Authoring sheets</text><text x="52" y="177">/data/notifications and /data/archive: the lists, served as cached JSON</text>
+    <rect x="720" y="140" width="340" height="44" rx="6" fill="#fff" stroke="#00095b"/><text x="732" y="160" font-weight="700">Hosted deliverables</text><text x="732" y="177">/pdfs/&lt;id&gt;.pdf on the site's own origin</text>
+  </g>
+
+  <!-- layer 2: app builder -->
+  <rect x="20" y="260" width="1060" height="200" rx="8" fill="#ecfdf3" stroke="#0d5a26" stroke-width="1.5"/>
+  <text x="40" y="288" font-size="16" font-weight="700" fill="#0d5a26">SERVICES  ·  Adobe App Builder (serverless business logic, no change to core AEM)</text>
+  <g font-size="13" fill="#0d5a26">
+    <rect x="40" y="302" width="320" height="70" rx="6" fill="#fff" stroke="#0d5a26"/><text x="52" y="324" font-weight="700">fmc-communications  (web action)</text><text x="52" y="344">create, save steps, edit, copy, review actions;</text><text x="52" y="361">per-caller limits; writes the sheets once per change</text>
+    <rect x="376" y="302" width="200" height="70" rx="6" fill="#fff" stroke="#0d5a26"/><text x="388" y="324" font-weight="700">fmc-pdf-poll  (1 min)</text><text x="388" y="344">follows PDF generation,</text><text x="388" y="361">hosts it, sets PUBLISHED</text>
+    <rect x="592" y="302" width="200" height="70" rx="6" fill="#fff" stroke="#0d5a26"/><text x="604" y="324" font-weight="700">ingest  (I/O Events)</text><text x="604" y="344">asset events keep the</text><text x="604" y="361">sheets in step with AEM</text>
+    <rect x="808" y="302" width="252" height="70" rx="6" fill="#fff" stroke="#0d5a26"/><text x="820" y="324" font-weight="700">fmc-reconcile  (15 min)</text><text x="820" y="344">safety net: repairs any drift</text><text x="820" y="361">between AEM and the sheets</text>
+    <rect x="40" y="388" width="520" height="56" rx="6" fill="#fff" stroke="#0d5a26"/><text x="52" y="410" font-weight="700">Business capabilities to add here</text><text x="52" y="430">unique EFC/EDC numbers, scheduling and end dates, notifications, archival flows</text>
+    <rect x="576" y="388" width="484" height="56" rx="6" fill="#fff" stroke="#0d5a26"/><text x="588" y="410" font-weight="700">fmc-admin (operator)  ·  state store</text><text x="588" y="430">support commands; rate limits and locks</text>
+  </g>
+
+  <!-- layer 3: AEM -->
+  <rect x="20" y="520" width="1060" height="200" rx="8" fill="#fff7ed" stroke="#9a3412" stroke-width="1.5"/>
+  <text x="40" y="548" font-size="16" font-weight="700" fill="#9a3412">CONTENT AND WORKFLOW  ·  AEM as a Cloud Service (Author)</text>
+  <g font-size="13" fill="#9a3412">
+    <rect x="40" y="562" width="330" height="140" rx="6" fill="#fff" stroke="#9a3412"/><text x="52" y="586" font-weight="700">AEM Assets: the source of truth</text><text x="52" y="608">each communication is a folder holding</text><text x="52" y="625">a DITA topic, a DITA map and an HTML preview;</text><text x="52" y="642">status, reviewer, audiences, dates and the PDF</text><text x="52" y="659">link are metadata; versions keep the history</text>
+    <rect x="386" y="562" width="330" height="140" rx="6" fill="#fff" stroke="#9a3412"/><text x="398" y="586" font-weight="700">AEM Guides: one source, two outputs</text><text x="398" y="608">output presets on the map produce PDF and HTML5;</text><text x="398" y="625">a DITAVAL filter drops field-only content from</text><text x="398" y="642">the dealer version; generation is started and</text><text x="398" y="659">followed through Guides' own calls</text>
+    <rect x="732" y="562" width="328" height="140" rx="6" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="7 5"/><text x="744" y="586" font-weight="700" fill="#b45309">AEM Workflow: review and approval</text><text x="744" y="608" fill="#b45309">OPEN. Today the service sets the review</text><text x="744" y="625" fill="#b45309">states. Target: an AEM workflow routes the</text><text x="744" y="642" fill="#b45309">review, correction and final approval, and</text><text x="744" y="659" fill="#b45309">App Builder reacts to its events</text>
+  </g>
+
+  <!-- connectors in the gaps between the layers -->
+  <g stroke="#333" stroke-width="2" fill="none">
+    <path d="M300 202 L300 258" marker-start="url(#a)" marker-end="url(#a)"/>
+    <path d="M890 202 L890 258" marker-end="url(#a)"/>
+    <path d="M200 462 L200 518" marker-end="url(#a)"/>
+    <path d="M476 462 L476 518" marker-start="url(#a)" marker-end="url(#a)"/>
+    <path d="M692 518 L692 462" marker-end="url(#a)"/>
+  </g>
+  <path d="M900 518 L900 462" stroke="#b45309" stroke-width="2" fill="none" stroke-dasharray="7 5" marker-end="url(#o)"/>
+  <g font-size="12" fill="#333">
+    <text x="310" y="235">reads the lists; the service writes and publishes them</text>
+    <text x="900" y="235">/api/fmc</text>
+    <text x="210" y="495">Assets API: upload, metadata</text>
+    <text x="486" y="495">start and follow PDF generation</text>
+    <text x="702" y="495">asset events</text>
+  </g>
+  <text x="910" y="495" font-size="12" fill="#b45309">workflow events (target)</text>
+
+  <!-- legend -->
+  <g font-size="12" fill="#333">
+    <rect x="40" y="744" width="26" height="12" fill="#fff" stroke="#00095b"/><text x="74" y="754">built and tested</text>
+    <rect x="200" y="744" width="26" height="12" fill="#fff" stroke="#b45309" stroke-width="2" stroke-dasharray="5 3"/><text x="234" y="754">target or open: being confirmed with the AEM team</text>
+  </g>
+</svg>
