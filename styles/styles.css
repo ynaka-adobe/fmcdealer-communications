@@ -308,3 +308,45 @@ main .section.dark {
 main .section.dark a:any-link {
   color: var(--background-color);
 }
+
+/* breadcrumb: HOME › TITLE, one line, the same type for both */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 24px 0 12px;
+}
+
+.breadcrumb a,
+.breadcrumb h1 {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.breadcrumb a:any-link {
+  color: #00095b;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover,
+.breadcrumb a:focus-visible {
+  text-decoration: underline;
+}
+
+.breadcrumb .breadcrumb-separator {
+  color: #777;
+  font-size: 28px;
+  line-height: 1.25;
+}
+
+@media (width < 600px) {
+  .breadcrumb a,
+  .breadcrumb h1,
+  .breadcrumb .breadcrumb-separator { font-size: 20px; }
+}

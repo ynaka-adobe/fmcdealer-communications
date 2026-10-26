@@ -126,11 +126,39 @@ function decorateSections(main) {
 }
 
 /**
+ * A page that opens with a Home link and then its title reads as a breadcrumb:
+ * HOME › TITLE, with the title still the page's h1.
+ * @param {Element} main The main element
+ */
+function decorateBreadcrumb(main) {
+  main.querySelectorAll(':scope > div').forEach((section) => {
+    const intro = section.firstElementChild;
+    const home = intro && intro.tagName === 'P' && intro.children.length === 1 ? intro.querySelector(':scope > a[href="/"]') : null;
+    const title = intro && intro.nextElementSibling;
+    if (!home || !title || title.tagName !== 'H1') return;
+    const nav = document.createElement('nav');
+    nav.className = 'breadcrumb';
+    nav.setAttribute('aria-label', 'Breadcrumb');
+    const link = document.createElement('a');
+    link.href = '/';
+    link.textContent = home.textContent.trim();
+    const separator = document.createElement('span');
+    separator.className = 'breadcrumb-separator';
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = '\u203A';
+    title.setAttribute('aria-current', 'page');
+    intro.replaceWith(nav);
+    nav.append(link, separator, title);
+  });
+}
+
+/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
 // eslint-disable-next-line import/prefer-default-export
 export function decorateMain(main) {
+  decorateBreadcrumb(main); // before buttons: its Home link is a link, not a button
   // hopefully forward compatible button decoration
   decorateButtons(main);
   decorateIcons(main);
