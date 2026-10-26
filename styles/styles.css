@@ -318,14 +318,15 @@ main .section.dark a:any-link {
   margin: 24px 0 12px;
 }
 
+/* the same type as the header's site name: Poppins, 22px, regular */
 .breadcrumb a,
 .breadcrumb h1 {
   margin: 0;
-  font-family: var(--heading-font-family);
-  font-size: 28px;
+  font-family: var(--body-font-family);
+  font-size: 22px;
   font-weight: 400;
   line-height: 1.25;
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
   text-transform: uppercase;
 }
 
@@ -341,12 +342,13 @@ main .section.dark a:any-link {
 
 .breadcrumb .breadcrumb-separator {
   color: #777;
-  font-size: 28px;
+  font-family: var(--body-font-family);
+  font-size: 22px;
   line-height: 1.25;
 }
 
 @media (width < 600px) {
   .breadcrumb a,
   .breadcrumb h1,
-  .breadcrumb .breadcrumb-separator { font-size: 20px; }
+  .breadcrumb .breadcrumb-separator { font-size: 18px; }
 }
