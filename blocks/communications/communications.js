@@ -263,6 +263,23 @@ export default async function decorate(block) {
     slice.forEach((r) => {
       const tr = el('tr');
       const actions = el('td', 'communications-actions');
+      // review steps only exist for communications that live in AEM (they have an asset path)
+      const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
+      // a PDF can only be downloaded when one was exported for this communication
+      // a published communication stays on Home (nothing archives it by itself), so it needs the
+      // same viewing actions as the archive, plus Archive (status ARCHIVED); Restore brings it back
+      const published = r.aemPath && r.status === 'PUBLISHED';
+      const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
+        .filter((a) => {
+          if (a === 'Edit') return r.aemPath && SITE_ID.test(r.id) && EDITABLE_STATUS.includes(r.status);
+          if (a === 'Preview' || a === 'Download HTML') return isArchive || published;
+          if (a === 'Download PDF') return r.pdf && (isArchive || published);
+          if (a === 'Archive') return published;
+          if (a === 'Restore') return r.aemPath && r.status === 'ARCHIVED';
+          if (a === 'Reopen') return r.aemPath;
+          if (a === 'Copy As New') return r.aemPath; // only a communication that lives in AEM can be copied
+          return true;
+        });
       const kebab = el('button', 'communications-kebab', '⋮');
       kebab.type = 'button';
       kebab.setAttribute('aria-label', `Actions for ${r.title}`);
@@ -272,23 +289,6 @@ export default async function decorate(block) {
         closeMenus();
         if (open) return;
         const menu = el('ul', 'communications-menu');
-        // review steps only exist for communications that live in AEM (they have an asset path)
-        const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
-        // a PDF can only be downloaded when one was exported for this communication
-        // a published communication stays on Home (nothing archives it by itself), so it needs the
-        // same viewing actions as the archive, plus Archive (status ARCHIVED); Restore brings it back
-        const published = r.aemPath && r.status === 'PUBLISHED';
-        const items = (isArchive ? menuActions : [menuActions[0], ...(step ? [step[0]] : []), ...menuActions.slice(1)])
-          .filter((a) => {
-            if (a === 'Edit') return r.aemPath && SITE_ID.test(r.id) && EDITABLE_STATUS.includes(r.status);
-            if (a === 'Preview' || a === 'Download HTML') return isArchive || published;
-            if (a === 'Download PDF') return r.pdf && (isArchive || published);
-            if (a === 'Archive') return published;
-            if (a === 'Restore') return r.aemPath && r.status === 'ARCHIVED';
-            if (a === 'Reopen') return r.aemPath;
-            if (a === 'Copy As New') return r.aemPath; // only a communication that lives in AEM can be copied
-            return true;
-          });
         items.forEach((a) => {
           const li = el('li');
           const item = el('button', '', a);
@@ -317,7 +317,8 @@ export default async function decorate(block) {
         menu.style.top = `${below ? k.bottom : Math.max(8, k.top - m.height)}px`;
         menu.style.left = `${Math.min(k.left, window.innerWidth - m.width - 8)}px`;
       });
-      actions.append(kebab);
+      // a row with no actions (for example a draft that was saved but never submitted) shows no menu
+      if (items.length) actions.append(kebab);
       tr.append(actions);
       COLUMNS.forEach((c) => {
         let text = r[c.key];
