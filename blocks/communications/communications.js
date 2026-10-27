@@ -133,6 +133,11 @@ export default async function decorate(block) {
     const archive = el('a', 'communications-button', 'View Archive');
     archive.href = '/archive';
     toolbar.append(archive);
+    const analytics = el('a', 'communications-button', 'Analytics');
+    analytics.href = 'https://www5.an.adobe.com/spa/?linkId=22922960-fc03-4979-90de-d361fa904a4b&dpc=pnw';
+    analytics.target = '_blank';
+    analytics.rel = 'noopener noreferrer';
+    toolbar.append(analytics);
   }
   const create = el('button', 'communications-button', 'Create Draft');
   create.type = 'button';
