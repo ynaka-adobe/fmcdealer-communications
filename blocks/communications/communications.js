@@ -237,7 +237,7 @@ export default async function decorate(block) {
         ? `Generating the PDF for "${r.title}". It moves to the archive when the PDF is ready.`
         : `"${r.title}" ${REVIEW_DONE[action]}.`);
     } catch (e) {
-      if (!e.cancelled) toast(e.message, 'error');
+      toast(e.message, 'error');
     }
   }
 
