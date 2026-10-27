@@ -343,14 +343,14 @@ header nav .nav-brand a:any-link {
 
 header nav .nav-brand .icon-ford-logo {
   flex: 0 0 auto;
-  width: 80px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
 }
 
 header nav .nav-brand .icon-ford-logo img {
   display: block;
-  width: 80px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
 }
 
 header .nav-brand {
