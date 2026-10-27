@@ -12,7 +12,7 @@ function el(tag, className, text) {
   return e;
 }
 
-/** A short message in the corner; kind is 'ok' or 'error'. */
+/** A short message in the corner; kind is 'ok', 'error', or 'progress' (spinner, stays until removed). Returns the message element. */
 export function toast(message, kind = 'ok') {
   let box = document.querySelector('.review-toasts');
   if (!box) {
@@ -21,9 +21,12 @@ export function toast(message, kind = 'ok') {
     box.setAttribute('aria-live', 'polite');
     document.body.append(box);
   }
-  const t = el('p', `review-toast review-toast-${kind}`, message);
+  const t = el('p', `review-toast review-toast-${kind}`);
+  if (kind === 'progress') t.append(el('span', 'review-spinner'));
+  t.append(document.createTextNode(message));
   box.append(t);
-  setTimeout(() => t.remove(), kind === 'error' ? 8000 : 4500);
+  if (kind !== 'progress') setTimeout(() => t.remove(), kind === 'error' ? 8000 : 4500);
+  return t;
 }
 
 /** Run a review action. Resolves with the service's answer; rejects with a readable message. */

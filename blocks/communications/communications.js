@@ -72,6 +72,10 @@ const NEXT_STEP = {
 };
 // Edit is offered for a draft made on the site while it is a draft or in review
 const EDITABLE_STATUS = ['DRAFT', 'REVIEWER PENDING'];
+// what the page says the moment an action is chosen, while the service works (it takes a few seconds)
+const REVIEW_PROGRESS = {
+  reviewer: 'Sending to the reviewer', final: 'Moving to final approval', approve: 'Starting the PDF', reopen: 'Reopening', archive: 'Archiving', restore: 'Restoring',
+};
 const REVIEW_DONE = {
   reviewer: 'sent to the reviewer', final: 'moved to final approval', approve: 'published', reopen: 'reopened as a draft', archive: 'moved to the archive', restore: 'moved back to Home',
 };
@@ -217,7 +221,14 @@ export default async function decorate(block) {
       .map((r) => (settled.has(r.id) ? { ...r, status: settled.get(r.id).status } : r));
   }
 
+  const busy = new Set(); // records with an action in progress
+
   async function review(r, action) {
+    if (busy.has(r.id)) return; // one action at a time per row
+    // feedback at once: the row dims with a spinner and a message says what is happening
+    busy.add(r.id);
+    renderBody();
+    const working = toast(`${REVIEW_PROGRESS[action] || 'Working'}: \u201C${r.title}\u201D\u2026`, 'progress');
     try {
       const out = await runReview(r.id, action);
       // approving starts PDF generation; the row leaves this list only once it is APPROVED
@@ -234,10 +245,15 @@ export default async function decorate(block) {
       Object.entries(selects).forEach(([key, { select, label }]) => fillSelect(select, key, label));
       renderBody();
       toast(out.status === 'GENERATING PDF'
-        ? `Generating the PDF for "${r.title}". It moves to the archive when the PDF is ready.`
+        ? `Generating the PDF for "${r.title}". It shows as Published when it is ready.`
         : `"${r.title}" ${REVIEW_DONE[action]}.`);
     } catch (e) {
-      toast(e.message, 'error');
+      // a server failure may still have saved the change, so say to check the list before trying again
+      toast(e.status >= 500 || !e.status ? 'That did not go through (the service did not answer). Check the list, then try again.' : e.message, 'error');
+    } finally {
+      working.remove();
+      busy.delete(r.id);
+      renderBody();
     }
   }
 
@@ -262,6 +278,7 @@ export default async function decorate(block) {
     }
     slice.forEach((r) => {
       const tr = el('tr');
+      if (busy.has(r.id)) { tr.classList.add('communications-busy'); tr.setAttribute('aria-busy', 'true'); }
       const actions = el('td', 'communications-actions');
       // review steps only exist for communications that live in AEM (they have an asset path)
       const step = !isArchive && r.aemPath && NEXT_STEP[r.status];
@@ -318,7 +335,12 @@ export default async function decorate(block) {
         menu.style.left = `${Math.min(k.left, window.innerWidth - m.width - 8)}px`;
       });
       // a row with no actions (for example a draft that was saved but never submitted) shows no menu
-      if (items.length) actions.append(kebab);
+      if (busy.has(r.id)) {
+        const spin = el('span', 'review-spinner');
+        spin.setAttribute('role', 'img');
+        spin.setAttribute('aria-label', 'Working');
+        actions.append(spin);
+      } else if (items.length) actions.append(kebab);
       tr.append(actions);
       COLUMNS.forEach((c) => {
         let text = r[c.key];

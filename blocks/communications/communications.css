@@ -340,3 +340,27 @@ dialog.announcement .announcement-create {
 }
 
 .communications .communications-status.status-archived { background: #e4e7ef; color: #3d4560; }
+
+/* an action in progress: the row dims, with a spinner where the menu button was */
+.communications tr.communications-busy { opacity: 0.55; pointer-events: none; }
+
+.review-spinner {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -3px;
+  animation: review-spin 0.8s linear infinite;
+}
+
+.communications td.communications-actions .review-spinner { margin: 0; color: #00095b; }
+
+.review-toast.review-toast-progress { background: #00095b; }
+
+@keyframes review-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) { .review-spinner { animation-duration: 3s; } }
