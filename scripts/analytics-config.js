@@ -10,7 +10,7 @@
  *   │ mode           │ needs                           │ status              │
  *   ├────────────────┼─────────────────────────────────┼─────────────────────┤
  *   │ websdk         │ edgeConfigId (+ orgId)          │ built, dormant      │
- *   │ appmeasurement │ reportSuiteId + trackingServer  │ ready: needs suite  │
+ *   │ appmeasurement │ reportSuiteId + trackingServer  │ ★ ACTIVE — filled   │
  *   │ debug          │ nothing                         │ fallback (always)   │
  *   └────────────────┴─────────────────────────────────┴─────────────────────┘
  *
@@ -19,7 +19,7 @@
  *
  * Any value can also be overridden per page via page metadata, using the same
  * convention as scripts/target.js, e.g.
- *   <meta name="analytics-report-suite-id" content="acsmarketingfmc">
+ *   <meta name="analytics-report-suite-id" content="acsmarketingdealernotification">
  *   <meta name="analytics" content="off">   <!-- disable on a single page -->
  */
 import { getMetadata } from './aem.js';
@@ -43,13 +43,14 @@ export const ANALYTICS_CONFIG = {
   /* ── mode 2: AppMeasurement → existing Adobe Analytics / Workspace ─────── */
 
   /**
-   * Adobe Analytics report suite ID for this site. PASTE HERE to start sending real hits. ◀──
-   * The suite should carry the same schema as `acsmarketingtebg` / `acsmarketingparker` (see
-   * docs/analytics.md) so the Engagement & Conversion Workspace works on it unchanged. Until it
-   * is set the site runs in `debug` mode: the same events, collected on window.adobeDataLayer and
-   * printed with `?analytics-debug=1`, but nothing is sent anywhere.
+   * Adobe Analytics report suite for this site: `acsmarketingdealernotification`, in the same
+   * `acsmarketing` org and with the same schema as `acsmarketingtebg` / `acsmarketingparker` (see
+   * docs/analytics.md), so the Engagement & Conversion Workspace works on it unchanged.
+   * A page can use another suite (for example a dev suite) with
+   * `<meta name="analytics-report-suite-id" content="...">`, and `?analytics-mode=debug` keeps a
+   * page from sending anything.
    */
-  reportSuiteId: '',
+  reportSuiteId: 'acsmarketingdealernotification',
 
   /** Analytics tracking server for the `acsmarketing` org. */
   trackingServer: 'acsmarketing.sc.omtrdc.net',

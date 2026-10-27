@@ -4,19 +4,16 @@ The same measurement design as the 3M, TEBG and Parker sites, so the **Engagemen
 Workspace** build guide works on this site unchanged. Blocks are measured automatically; the
 Create Draft journey and the generated downloads report their own events.
 
-## Turning it on
+## Where the data goes
 
-Nothing is sent until a report suite is set. Until then the site runs in **debug** mode: the same
-events are collected on `window.adobeDataLayer`, and nothing leaves the browser.
+Report suite **`acsmarketingdealernotification`** (tracking server `acsmarketing.sc.omtrdc.net`), set in
+`scripts/analytics-config.js`. Hits go out through AppMeasurement. If `AppMeasurement.js` is not
+hosted (the default), the module builds the identical `/b/ss/{suite}/…` request itself. To use the
+Web SDK instead, set `edgeConfigId` (a datastream); the variable map does not change.
 
-1. Create a report suite with the schema below (copy `acsmarketingtebg`, as Parker did).
-2. Put its ID in `scripts/analytics-config.js` (`reportSuiteId`), or set it per page with
-   `<meta name="analytics-report-suite-id" content="...">`.
-3. Publish. `trackingServer` is already set for the `acsmarketing` org.
-
-Hits go out through AppMeasurement. If `AppMeasurement.js` is not hosted (the default), the module
-builds the identical `/b/ss/{suite}/…` request itself. To use the Web SDK instead, set
-`edgeConfigId` (a datastream); the variable map does not change.
+The suite needs the same schema as `acsmarketingtebg` (below). A single page can send to another
+suite with `<meta name="analytics-report-suite-id" content="...">`, and `?analytics-mode=debug`
+stops a page from sending anything while still collecting events on `window.adobeDataLayer`.
 
 ## The schema it fills
 
@@ -79,13 +76,24 @@ for that. Link text is taken from visible labels. A control that names a record 
 - `?analytics-mode=debug` forces debug mode on a page even when a suite is set.
 - `<meta name="analytics" content="off">` turns it off for one page.
 
-## Not included (compared with Parker and 3M)
+## The live Insights panel
 
-The presenter's in-page insights panel (`?insights=1`) is not ported: it depends on persona and
-signal modules that this site does not have. It reads the same data layer, so it can be added later.
+A small **Insights** tab sits at the bottom right of every page. Hover it to peek at the panel,
+click it to pin it open (click again, the ×, or Escape to close; Shift+Alt+I toggles it). The panel
+is computed in the browser from `window.adobeDataLayer`, so it shows exactly what is being sent: the
+event count, the components seen, the most-clicked link, scroll depth and a live feed. It has a
+bot-signals section and an invisible-traffic reference that are labelled as roadmap illustrations
+(`scripts/signals.js` explains which figures are measured and which are reference data).
+
+- `?insights=0` hides it for the rest of the browser tab; `?insights=1` brings it back, opened.
+- `<meta name="insights" content="off">` removes it from one page.
+- On a touch screen, tapping the tab opens it; there is no hover.
+- The opt-in benchmark section from 3M and Parker is left out: it compares consent banners, and
+  consent here is implied.
 
 ## Files
 
 `scripts/analytics.js` (instrumentation and data layer), `analytics-config.js` (settings),
 `analytics-transport/` (AppMeasurement, Web SDK, debug), `consent.js`, `analytics-events.js`
-(how a block reports its own event), `delayed.js` (loads it after the page is interactive).
+(how a block reports its own event), `insights.js` and `signals.js` with `styles/insights.css` (the
+panel), `delayed.js` (loads it all after the page is interactive).

@@ -364,3 +364,6 @@ dialog.announcement .announcement-create {
 @keyframes review-spin { to { transform: rotate(360deg); } }
 
 @media (prefers-reduced-motion: reduce) { .review-spinner { animation-duration: 3s; } }
+
+/* the analytics tab sits bottom right: messages stack above it */
+body:has(.insights-toggle) .review-toasts { bottom: 72px; }
