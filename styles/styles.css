@@ -215,7 +215,7 @@ button:disabled:hover {
   cursor: unset;
 }
 
-/* Ford buttons: content links styled as buttons match the app's navy buttons */
+/* Buttons: content links styled as buttons match the app's navy buttons */
 a.button:any-link {
   margin: 0 0 12px;
   border: 0;

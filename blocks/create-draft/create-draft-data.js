@@ -1,13 +1,13 @@
 /*
  * Option lists and persistence for the Create Draft form.
- * Values come from the Ford screens; anything marked "sample" is made up for the demo.
+ * Values come from the source screens; anything marked "sample" is made up for the demo.
  * Replace saveDraft() with a write to AEM Assets when the target is decided.
  */
-export const DIVISIONS = ['Sales Ops', 'FCSD'];
+export const DIVISIONS = ['Sales Ops', 'FSD'];
 
 export const CHANNELS = [
-  'Customer Support', 'FCSD Other', 'Aftermarket - Dealers', 'Aftermarket - FAD', 'Collision',
-  'Ford and Lincoln Protect', 'Parts', 'Service', 'Warranty',
+  'Customer Support', 'FSD Other', 'Aftermarket - Dealers', 'Aftermarket - FAD', 'Collision',
+  'Summit and Crestline Protect', 'Parts', 'Service', 'Warranty',
 ];
 
 // sample: who reviews / concurs for each channel (filled in when a channel is chosen)
@@ -17,14 +17,14 @@ export const ROUTING = {
   Collision: { reviewer: 'kvikran2', alternate: 'ndolloff', concurring: 'sraja25' },
 };
 
-export const FIELD_GROUPS = ['All Ford Field Personnel', 'All Ford and Lincoln Field Personnel', 'All Lincoln Field Personnel'];
+export const FIELD_GROUPS = ['All Summit Field Personnel', 'All Summit and Crestline Field Personnel', 'All Crestline Field Personnel'];
 
 export const FIELD_ROLES = [
-  'General Manager', 'Ford Regional Manager', 'FCSD and SalesOps Market Area Trainer',
+  'General Manager', 'Summit Regional Manager', 'FSD and SalesOps Market Area Trainer',
   'Office Operations Specialist', 'Marketing Manager', 'Accessory Sales Manager',
 ];
 
-export const DEALER_GROUPS = ['All Ford & Lincoln Dealers', 'All Ford Dealers', 'All Lincoln Dealers'];
+export const DEALER_GROUPS = ['All Summit & Crestline Dealers', 'All Summit Dealers', 'All Crestline Dealers'];
 
 export const DEALER_ROLES = [
   'Dealer Principals', 'General Managers', 'Fixed Operations Directors', 'Sales Managers', 'Sales Consultants',
@@ -33,8 +33,8 @@ export const DEALER_ROLES = [
 ];
 
 export const DEPARTMENTS = [
-  'New Sales', 'Ford Blue Advantage/Lincoln CPO/Use', 'Service', 'Parts', 'Warranty', 'Quick Lane',
-  'Ford Pro - Fleet Sales, Service and Solutions', 'Public Affairs', 'Finance', 'Training',
+  'New Sales', 'Summit Blue Advantage/Crestline CPO/Use', 'Service', 'Parts', 'Warranty', 'Quick Lane',
+  'Summit Pro - Fleet Sales, Service and Solutions', 'Public Affairs', 'Finance', 'Training',
 ];
 
 const DRAFTS_KEY = 'fmc-drafts';

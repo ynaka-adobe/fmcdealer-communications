@@ -66,19 +66,19 @@ const DETAILS = {
   EFC260061: {
     fields: [
       ['Field Publish Date', 'May 5, 2026'],
-      ['Target Field Group', 'All Ford Field Personnel'],
-      ['Field Lead', 'FCSD and SalesOps Market Area Trainer'],
+      ['Target Field Group', 'All Summit Field Personnel'],
+      ['Field Lead', 'FSD and SalesOps Market Area Trainer'],
       ['Field Support', 'Office Operations Specialist'],
-      ['Target Department', 'Service, Ford Blue Advantage/Lincoln CPO/Use, New Sales'],
+      ['Target Department', 'Service, Summit Blue Advantage/Crestline CPO/Use, New Sales'],
     ],
     title: 'EFC260061-S1 Host an event and build awareness for a local non-profit organization',
     body: `
       <h2>Action Requested</h2>
-      <p>Building on 12 years of community commitment and the momentum of our Ford Building Together initiative, we\u2019re excited to kick off the 2026 Summer of Community Impact. This year, we proudly continue our work with the American Red Cross, Feeding America, Habitat for Humanity, and Team Rubicon, and we welcome World Central Kitchen as our fifth Ford Building Together partner.</p>
+      <p>Building on 12 years of community commitment and the momentum of our Summit Building Together initiative, we\u2019re excited to kick off the 2026 Summer of Community Impact. This year, we proudly continue our work with the American Red Cross, Feeding America, Habitat for Humanity, and Team Rubicon, and we welcome World Central Kitchen as our fifth Summit Building Together partner.</p>
       <h2>Summary</h2>
-      <p>Beginning in June, you have a unique opportunity to contribute to the building or rebuilding of your local community. We invite you to collaborate with one of our five Ford Building Together partners or a trusted local organization of your choice that focuses on Community Development, Disaster Relief or Skill-based Technical Education. By participating, you\u2019ll be part of a nationwide initiative dedicated to giving back and building meaningful relationships in the communities we serve.</p>
+      <p>Beginning in June, you have a unique opportunity to contribute to the building or rebuilding of your local community. We invite you to collaborate with one of our five Summit Building Together partners or a trusted local organization of your choice that focuses on Community Development, Disaster Relief or Skill-based Technical Education. By participating, you\u2019ll be part of a nationwide initiative dedicated to giving back and building meaningful relationships in the communities we serve.</p>
       <h2>Questions</h2>
-      <p><strong>Host a community event within your Dealership\u2019s PMA with one of our five Ford Building Together Partners.</strong> You will work with local chapter representatives to host the event of your choosing. There are a limited number of events based on partner resources and geographic locations. They are available on a first-come, first-serve basis.</p>
+      <p><strong>Host a community event within your Dealership\u2019s PMA with one of our five Summit Building Together Partners.</strong> You will work with local chapter representatives to host the event of your choosing. There are a limited number of events based on partner resources and geographic locations. They are available on a first-come, first-serve basis.</p>
       <ul>
         <li>American Red Cross \u2013 Host a blood drive or CPR/AED Certification</li>
         <li>Feeding America \u2013 Host a food drive or a volunteer day at a food bank</li>

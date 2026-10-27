@@ -6,7 +6,7 @@
 
 .insights-panel,
 .insights-toggle {
-  /* this site's palette: Ford navy for the tab, blue for the accent */
+  /* this site's palette: navy for the tab, blue for the accent */
   --ink: #0a1a5c;
   --accent: #4a6fc0;
   --accent-deep: #00095b;

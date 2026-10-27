@@ -120,8 +120,8 @@ function checkGroup(state, key, label, options, { columns } = {}) {
 
 function step1(state) {
   const box = el('div', 'cd-card cd-narrow');
-  const reviewer = textField(state, 'reviewer', 'Reviewer CDSID', { readonly: true });
-  const alternate = textField(state, 'alternate', 'Alternate Reviewer CDSID', { readonly: true });
+  const reviewer = textField(state, 'reviewer', 'Reviewer User ID', { readonly: true });
+  const alternate = textField(state, 'alternate', 'Alternate Reviewer User ID', { readonly: true });
   const concurring = textField(state, 'concurring', 'Concurring Manager', { required: true, readonly: true });
   const fill = (channel) => {
     const r = ROUTING[channel] || ROUTING.default;
@@ -137,7 +137,7 @@ function step1(state) {
     reviewer,
     alternate,
     concurring,
-    textField(state, 'originator', 'Originator CDSID', { required: true, readonly: true }),
+    textField(state, 'originator', 'Originator User ID', { required: true, readonly: true }),
     textField(state, 'businessContact', 'Business Contact', { required: true }),
   );
   return box;
