@@ -300,6 +300,7 @@ export default async function decorate(block) {
       const kebab = el('button', 'communications-kebab', '⋮');
       kebab.type = 'button';
       kebab.setAttribute('aria-label', `Actions for ${r.title}`);
+      kebab.dataset.analyticsLabel = 'Row actions'; // analytics reports this, never the record's title
       kebab.addEventListener('click', (e) => {
         e.stopPropagation();
         const open = actions.querySelector('.communications-menu');

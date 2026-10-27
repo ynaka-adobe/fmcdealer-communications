@@ -6,6 +6,7 @@ import {
   createDraft, saveDraftStep, loadDraftForEdit, loadDraftForCopy, updateDraft,
 } from '../../scripts/communications-api.js';
 import { sanitizeHtml, richText } from './rich-text.js';
+import trackEvent from '../../scripts/analytics-events.js';
 
 const STEPS = 4;
 const DATE_FMT = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -463,7 +464,22 @@ export default async function decorate(block) {
     }
   }
 
+  // Analytics: this journey is not a <form> element, so its start, submit and failure are reported
+  // here. They use the report suite's Form Start / Form Submit events with the form name, and a
+  // draft that is started but never submitted is the abandonment the suite already measures.
+  const formName = (editId && 'edit-draft') || (copyId && 'copy-draft') || 'create-draft';
+  const formDetail = () => ({ form: { name: formName, id: state.draftId } });
+  let formStarted = false;
+  const reportStart = () => {
+    if (formStarted) return;
+    formStarted = true;
+    trackEvent('form-start', block, formDetail());
+  };
+  block.addEventListener('input', reportStart, true);
+  block.addEventListener('change', reportStart, true);
+
   function render() {
+    block.dataset.analyticsStep = String(Math.min(state.step, 7)); // rides along on every event from this block
     block.textContent = '';
     const preview = state.step > STEPS;
     if (copying && !preview) {
@@ -536,12 +552,14 @@ export default async function decorate(block) {
       body.append(done);
       const payload = snapshot();
       (editing ? updateDraft(editId, payload) : createDraft(payload)).then(() => {
+        trackEvent('form-submit', block, formDetail());
         done.textContent = '';
         done.append(el('h2', '', editing ? 'Changes saved' : 'Draft created'), el('p', '', editing ? `\u201C${state.title}\u201D was updated.` : `“${state.title}” was saved as a draft.`));
         const home = el('a', 'cd-btn cd-btn-blue', 'Back to Communications');
         home.href = '/';
         done.append(home);
       }).catch(() => {
+        trackEvent('form-error', block, formDetail());
         done.textContent = '';
         done.append(el('h2', '', 'Draft not saved'), el('p', '', 'The draft could not be saved. Your entries are kept; try again.'));
         const retry = el('button', 'cd-btn cd-btn-blue', 'Back to review');
